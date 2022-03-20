@@ -538,7 +538,7 @@ InitResizeHandle = function(Handle, Caller)
     if not table.find(Whitelist, Handle) then
         table.insert(Whitelist, Handle)
     end
-    if not VisualizerConnected[Handle] then
+    if not VisualizerConnected[Handle] and Configuration.Visuals.Visualizer.Enabled then
         VisualizerConnected[Handle] = true
         Vis[Handle] = {}
         local Weld = Instance.new('Weld')
