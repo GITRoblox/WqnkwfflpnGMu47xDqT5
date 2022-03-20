@@ -586,6 +586,7 @@ InitResizeHandle = function(Handle, Caller)
 
              -- // Fake Handle
             if not LoopConnected[Handle] then
+                print('A')
                 LoopConnected[Handle] = true
                 task.spawn(function()
                     while task.wait(0.1) do
@@ -614,6 +615,7 @@ InitResizeHandle = function(Handle, Caller)
 
             -- // Fake Handle
             if not LoopConnected[Handle] then
+                print('A')
                 LoopConnected[Handle] = true
                 task.spawn(function()
                     while task.wait(0.1) do
@@ -658,12 +660,14 @@ InitSpawn(function()
         for i, v in pairs(Server:GetPlayers()) do
             if v and v ~= Client and v.Character then
                 if not table.find(PlayerNames, v.Name) then
+                    print('B')
                     table.insert(PlayerNames, v.Name)
 		end
 		local Hum = v.Character:WaitForChild('Humanoid', 0.1)
                 if Hum then
                     for i, v in pairs(v.Character:GetChildren()) do
                         if v:IsA('BasePart') and not table.find(bodyParts, v) then
+                            print('C')
                             table.insert(bodyParts, v)
                             Hum.Died:Connect(function() for i, c in pairs(bodyParts) do if c == v then table.remove(bodyParts, i) end end end)
                         end
@@ -761,6 +765,7 @@ InitSpawn(function()
             end
             if not ConnectedSignal[Handle] and Configuration.Customization.Enable_On_Lunge then
                 ConnectedSignal[Handle] = Handle.Parent:GetPropertyChangedSignal('Grip'):Connect(function(RECEIVED_ARGUMENTS)
+                    print('D')
                     if Handle.Parent.GripUp.Z == 0 and not debbb then
                         debbb = true
                         LungeOnlyCon = false
@@ -803,6 +808,7 @@ InitSpawn(function()
                         end
 			debbb = false
                     elseif Handle.GripUp.Z == 1 and not debbb then
+                        print('E')
 		        debbb = true
                         LungeOnlyCon = true
                         if setrawproperty then
@@ -824,6 +830,7 @@ InitSpawn(function()
                                 Handle:GetPropertyChangedSignal('AssemblyMass')
                             })
                         else
+			    print('F')
                             DisableConnection({
                                 Handle.Changed,
                                 Handle:GetPropertyChangedSignal('Size'),
