@@ -21,7 +21,7 @@ Compatibility: Synapse X
            |__/                                                                            |__/                                          |___/|/                                                       |__/                |___/                          
 ]]
 
-if not NETWORK then
+if not getgenv().NETWORK then
     game.Players.LocalPlayer:Kick('NETWORK NOT FOUND')
     return
 end
