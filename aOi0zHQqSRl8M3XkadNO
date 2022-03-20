@@ -672,7 +672,8 @@ InitSpawn(function()
                         table.insert(bodyParts, v)
                     end
                 end
-                if v.Character and v.Character.Head and v.Character.Head.Transparency >= 1 and Configuration.Customization.Auto_Disable.Inivisible_Person_Approaches and Client and Client.Character and Client.Character.HumanoidRootPart then
+		local Handle = GetClientHandle()
+                if Handle and v.Character and v.Character.Head and v.Character.Head.Transparency >= 1 and Configuration.Customization.Auto_Disable.Inivisible_Person_Approaches and Client and Client.Character and Client.Character.HumanoidRootPart then
                     local Distance = (v.Character.HumanoidRootPart.Position - Client.Character.HumanoidRootPart.Position).Magnitude
                     if Distance <= Configuration.Customization.Auto_Disable.Trigger_Distance then
                         if setrawproperty then
