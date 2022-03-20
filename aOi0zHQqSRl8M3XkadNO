@@ -21,6 +21,11 @@ Compatibility: Synapse X
            |__/                                                                            |__/                                          |___/|/                                                       |__/                |___/                          
 ]]
 
+if not NETWORK then
+    game.Players.LocalPlayer:Kick('NETWORK NOT FOUND')
+    return
+end
+
 -- // Services
 local Server = game:GetService('Players')
 local ReplicatedStorage = game:GetService('ReplicatedStorage')
