@@ -661,6 +661,7 @@ local ChildRemovedConnection = Client.Character.ChildRemoved:Connect(function(To
     end
 end)
 
+local debbb = false
 local LungeOnlyCon = false
 local ConnectedSignal = {}
 InitSpawn(function()
@@ -763,7 +764,8 @@ InitSpawn(function()
             end
             if not ConnectedSignal[Handle] and Configuration.Customization.Enable_On_Lunge then
                 ConnectedSignal[Handle] = Handle.Parent:GetPropertyChangedSignal('Grip'):Connect(function(RECEIVED_ARGUMENTS)
-                    if Handle.Parent.GripUp.Z == 0 then
+                    if Handle.Parent.GripUp.Z == 0 and not debbb then
+                        debbb = true
                         LungeOnlyCon = false
                         if setrawproperty then
                             DisableConnection({
@@ -802,7 +804,9 @@ InitSpawn(function()
                                 Handle:GetPropertyChangedSignal('AssemblyMass')
                             })
                         end
-                    else
+			debbb = false
+                    elseif Handle.GripUp.Z == 1 and not debbb then
+		        debbb = true
                         LungeOnlyCon = true
                         if setrawproperty then
                             DisableConnection({
@@ -841,6 +845,7 @@ InitSpawn(function()
                                 Handle:GetPropertyChangedSignal('AssemblyMass')
                             })
                         end
+			debbb = false
                     end
                 end)
             end
