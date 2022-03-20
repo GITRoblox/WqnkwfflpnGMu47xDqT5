@@ -1,0 +1,1079 @@
+--[[
+  _  __                      _         _     _                            _         _                                       _     _                  _                _            _ _ _                   _   _    _             _         _            
+ (_)/ _|  _  _ ___ _  _   __| |___ _ _| |_  | |___ _  _____ __ __ __ __ _| |_  __ _| |_   _  _ ___ _  _   __ _ _ _ ___   __| |___(_)_ _  __ _     __| |___   _ _  ___| |_   ___ __| (_) |_   __ _ _ _ _  _| |_| |_ (_)_ _  __ _  | |__  ___| |_____ __ __
+ | |  _| | || / _ \ || | / _` / _ \ ' \  _| | / / ' \/ _ \ V  V / \ V  V / ' \/ _` |  _| | || / _ \ || | / _` | '_/ -_) / _` / _ \ | ' \/ _` |_  / _` / _ \ | ' \/ _ \  _| / -_) _` | |  _| / _` | ' \ || |  _| ' \| | ' \/ _` | | '_ \/ -_) / _ \ V  V /
+ |_|_|    \_, \___/\_,_| \__,_\___/_||_\__| |_\_\_||_\___/\_/\_/   \_/\_/|_||_\__,_|\__|  \_, \___/\_,_| \__,_|_| \___| \__,_\___/_|_||_\__, ( ) \__,_\___/ |_||_\___/\__| \___\__,_|_|\__| \__,_|_||_\_, |\__|_||_|_|_||_\__, | |_.__/\___|_\___/\_/\_/ 
+           |__/                                                                            |__/                                          |___/|/                                                       |__/                |___/                          
+]]
+
+-- // Services
+local Server = game:GetService('Players')
+local ReplicatedStorage = game:GetService('ReplicatedStorage')
+local UserInputService = game:GetService('UserInputService')
+
+-- // Variables
+local Client = Server.LocalPlayer
+local Mouse = Client:GetMouse()
+
+local DestroyedHandle = false
+local PreventFindingHandle = true
+
+local InitResizeHandle
+local InitResizeFake
+local InitSpawn
+
+-- // Arrays
+-- Spoofing
+local SpoofedHandle = {}
+local RequiredIndex = {'size', 'mass', 'massless', 'archivablemass', 'changed', 'clone', 'getmass', 'resize'}
+local SpecialIndex = {}
+local RequiredMethod = {'Clone', 'getMass', 'GetMass', 'clone'}
+local SpecialMethod = {'resize', 'Resize'}
+
+-- // Libraries
+-- Handle Bypass
+if Configuration.KAnti then
+    Configuration.Size.X_Size = 0.1
+end
+
+-- // Functions
+local function GetClientCharacter()
+    local Success, Error = pcall(function()
+        return Client.Character
+    end)
+    if Success then
+        return Client.Character
+    end
+    return false
+end
+
+local function GetPlayerCharacter(Player)
+    for _, Model in pairs(workspace:GetDescendants()) do
+        if Model:IsA('Model') and Player.Name == Model.Name and #Model:GetChildren() > 3 then
+            return Model
+        end
+    end
+    return false
+end
+
+local function GetHandleFromCharacter(Character)
+    local InitialTool = Character and Character:FindFirstChildOfClass('Tool') or nil
+    local InitialHumanoid = Character and Character:FindFirstChildOfClass('Humanoid') or nil
+    local InitialHandle = InitialTool and InitialTool:FindFirstChildOfClass('Part') or nil
+    if InitialHandle and InitialHumanoid and InitialHumanoid.Health and InitialHumanoid.Health > 0 then
+        local InitialDistance = (Character['Right Arm'].Position - InitialHandle.Position).Magnitude
+        if InitialDistance < 9 then
+            return InitialHandle
+        else
+            if InitialDistance >= 9 then
+                local TouchingConnection = Character['Right Arm'].Touched:Connect(function() end)
+                local TouchingParts = Character['Right Arm']:GetTouchingParts()
+                for _, Part in pairs(TouchingParts) do
+                    if Part.Parent:IsA('Tool') then
+                        TouchingConnections:Disconnect()
+                        return Part
+                    end
+                end
+                if TouchingConnections then
+                    TouchingConnections:Disconnect()
+                end
+            end
+        end
+    end
+    return false
+end
+
+local function GetClientHandle()
+    local Character = GetClientCharacter()
+    if Character then
+        local Handle = GetHandleFromCharacter(Character)
+        if Handle then
+            return Handle
+        end
+    end
+    return false
+end
+
+local function InitFakeHandle(Handle)
+    SpoofedHandle[Handle] = Handle:Clone()
+end
+
+local function Parse(Object, String, IsAMethod)
+    local Success, Error = pcall(function()
+        if not IsAMethod then
+            return Object[String]
+        else
+            return Object[String](Object)
+        end
+    end)
+    if Success then
+        if not IsAMethod then
+            local Lowered = string.lower(String)
+            local Split = string.split(String, [[\0]])
+            return string.lower(Split[1])
+        else
+            local Split = string.split(String, [[\0]])
+            return Split[1]
+        end
+    end
+    return false
+end
+
+local function Protect(Object)
+    local NewIndexAnti
+    NewIndexAnti = hookmetamethod(game, '__newindex', function(Inst, Prop, New)
+        if not checkcaller() and Inst == Object then
+            return error('attempt to index nil with ' .. Prop)
+        end
+        return NewIndexAnti(Inst, Prop, New)
+    end)
+    local NamecallAnti
+    NamecallAnti = hookmetamethod(game, '__namecall', function(Part, ...)
+        if not checkcaller() and Part == Object then
+            local Parsed = Parse(Part, getnamecallmethod(), true)
+            if Parsed then
+                if table.find(FindMethod, Parsed) then
+                    return error('attempt to call a nil value')
+                end
+            end
+        end
+        return NamecallAnti(Part, ...)
+    end)
+    local IndexAnti
+    IndexAnti = hookmetamethod(game, '__index', function(Part, Index)
+        if not checkcaller() and Part == Object then
+            local Parsed = Parse(Part, Index, false)
+            if Parsed then
+                if table.find(FindIndex, Parsed) then
+                    return error('attempt to index nil with ' .. Index)
+                end
+            end
+        end
+        return IndexAnti(Part, Index)
+    end)
+end
+
+local function Debug(Message)
+    if Configuration.DebugMode then
+        printconsole('[DEBUG | DETOUR] ' .. Message)
+    end
+end
+
+local function ProtectConnection(Handle)
+    local awaitDestroy
+    awaitDestroy = hookmetamethod(game, '__namecall', function(Object, ...)
+        if not checkcaller() and Object == Handle then
+            local Method = Parse(Object, getnamecallmethod(), true)
+            if Method then
+                if table.find(SpecialMethod, Method) then
+                    DestroyedHandle = true
+                end
+            end
+        end
+        return awaitDestroy(Object, ...)
+    end)
+end
+
+local function DisableConnection(Connection)
+    if type(Connection) == 'table' then
+        for _, _Con_0 in pairs(Connection) do
+            for _, _Con_1 in pairs(getconnections(_Con_0)) do
+                _Con_1:Disable()
+            end
+        end
+    else
+        for _, Con in pairs(getconnections(Connection)) do
+            v:Disable()
+        end
+    end
+end
+
+local function EnableConnection(Connection)
+    if type(Connection) == 'table' then
+        for _, _Con_0 in pairs(Connection) do
+            for _, _Con_1 in pairs(getconnections(_Con_0)) do
+                _Con_1:Enable()
+            end
+        end
+    else
+        for _, Con in pairs(getconnections(Connection)) do
+            v:Enable()
+        end
+    end
+end
+
+local function GetPartsInsidePart(Part)
+    local Character = GetClientCharacter()
+    if Character then
+        local TouchingConnection = Part.Touched:Connect(function() end)
+        local Objects = {}
+        local Connected = Part:GetTouchingParts()
+        for _, Object in pairs(Connected) do
+            if Object ~= Part and Object:FindFirstChildOfClass('TouchTransmitter') then -- // Do not question me on this
+                table.insert(Objects, Object)
+            end
+        end
+        TouchingConnection:Disconnect()
+        return Objects
+    end
+    return false
+end
+
+local function GetParents(Object)
+    local Parents = {}
+    local CurrentParent = Object.Parent
+    repeat
+        table.insert(Parents, CurrentParent)
+        CurrentParent = CurrentParent.Parent
+    until
+        CurrentParent == game or not CurrentParent
+    return #Parents >= 1 and Parents or false
+end
+
+local function HookFunc(Array)
+    for i = 1, #Array do
+        local hookLocalized
+        hookLocalized = hookfunction(Array[i], newcclosure(function(Object, ...)
+            if not checkcaller() and SpoofedHandle[Object] then
+                return hookLocalized(SpoofedHandle[Object], ...)
+            end
+            return hookLocalized(Object, ...)
+        end))
+    end
+end
+
+local TS = game:GetService('TweenService')
+local function InitiateSpoof()
+    Debug('Initiated spoofing.')
+    local newChanges
+    newChanges = hookmetamethod(game, '__newindex', function(Instance, Property, Applied)
+        if not checkcaller() and SpoofedHandle[Instance] then
+            
+            if SpoofedHandle[Instance] then
+                local Success, Error = pcall(function()
+                    return Instance[Property]
+                end)
+                if Success then
+                    return newChanges(SpoofedHandle[Instance], Property, Applied)
+                end
+            end
+        end
+        return newChanges(Instance, Property, Applied)
+    end)
+    local indexMeta
+    indexMeta = hookmetamethod(game, '__index', function(Object, Index)
+        if not checkcaller() and SpoofedHandle[Object] then
+            local Ind = Parse(Object, Index, false)
+            if Ind then
+                for i, v in pairs(RequiredIndex) do
+                    if Ind:find(v) then
+                        return indexMeta(SpoofedHandle[Object], Index)
+                    end
+                end
+                if Ind == 'getpropertychangedsignal' then
+                    return function(Obj_1, Obj_2)
+                        if table.find(RequiredIndex, Obj_2) then
+                            return Obj_1:GetPropertyChangedSignal('ClassName')
+                        end
+                        return Obj_1:GetPropertyChangedSignal(Obj_2)
+                    end 
+                else
+                    if Configuration.Visuals.Visualizer.Enabled and Ind:find('adornee') then
+                        return nil
+                    end
+                end
+            end
+        end
+        return indexMeta(Object, Index)
+    end)
+    local namecallMeta
+    namecallMeta = hookmetamethod(game, '__namecall', function(Object, ...)
+        local Params = {...}
+        if not checkcaller() and SpoofedHandle[Object] then
+            local Method = Parse(Object, getnamecallmethod(), true)
+            if Method then
+                for i, v in pairs(RequiredMethod) do
+                    if Method:find(v) then
+                        return namecallMeta(SpoofedHandle[Object], ...)
+                    end
+                end
+                for i, v in pairs(SpecialMethod) do
+                    if Method:find(v) then
+                        return namecallMeta(SpoofedHandle[Object], ...)
+                    end
+                end
+            end
+        else
+            if not checkcaller() then
+                if Object == TS then
+                    local Method = Parse(Object, getnamecallmethod(), true)
+                    if Method == 'Create' then
+                        if Params[1] and SpoofedHandle[Params[1]] then
+                            Params[1] = SpoofedHandle[Params[1]]
+                            return namecallMeta(Object, unpack(Params))
+                        end
+                    end
+                end
+            end
+        end
+        return namecallMeta(Object, ...)
+    end)
+    HookFunc({
+        -- Part
+        Instance.new('Part').Clone,
+        Instance.new('Part').clone,
+        Instance.new('Part').Resize,
+        Instance.new('Part').resize,
+        Instance.new('Part').GetMass,
+        Instance.new('Part').getMass,
+
+        -- Model
+        Instance.new('Model').Clone,
+        Instance.new('Model').clone,
+    })
+    Debug('Finished process spoofing.')
+end
+
+local function IsSpoofed(Object)
+    return SpoofedHandle[Object] and true or false
+end
+
+local function Initiate(Handle, IsFake, SelectedSize, SetRawProperty)
+    if not IsSpoofed(Handle) then
+        InitFakeHandle(Handle)
+    end
+    if not IsFake then
+        DisableConnection({
+            Handle.Changed,
+            Handle:GetPropertyChangedSignal('Size'),
+            Handle:GetPropertyChangedSignal('Mass'),
+            Handle:GetPropertyChangedSignal('Massless'),
+            Handle:GetPropertyChangedSignal('AssemblyMass')
+        })
+        InitResizeHandle(Handle, true)
+        EnableConnection({
+            Handle.Changed,
+            Handle:GetPropertyChangedSignal('Size'),
+            Handle:GetPropertyChangedSignal('Mass'),
+            Handle:GetPropertyChangedSignal('Massless'),
+            Handle:GetPropertyChangedSignal('AssemblyMass')
+        })
+    else
+        if isFake and SelectedSize and SetRawProperty then
+            DisableConnection({
+                Handle.Changed,
+                Handle:GetPropertyChangedSignal('Size'),
+                Handle:GetPropertyChangedSignal('Mass'),
+                Handle:GetPropertyChangedSignal('Massless'),
+                Handle:GetPropertyChangedSignal('AssemblyMass')
+            })
+            setrawproperty(Handle, 'Massless', true)
+            setrawproperty(Handle, 'CanCollide', false)
+            setrawproperty(Handle, 'Size', SelectedSize)
+            EnableConnection({
+                Handle.Changed,
+                Handle:GetPropertyChangedSignal('Size'),
+                Handle:GetPropertyChangedSignal('Mass'),
+                Handle:GetPropertyChangedSignal('Massless'),
+                Handle:GetPropertyChangedSignal('AssemblyMass')
+            })
+        else
+            if isFake and SelectedSize and not SetRawProperty then
+                DisableConnection({
+                    Handle.Changed,
+                    Handle:GetPropertyChangedSignal('Size'),
+                    Handle:GetPropertyChangedSignal('Mass'),
+                    Handle:GetPropertyChangedSignal('Massless'),
+                    Handle:GetPropertyChangedSignal('AssemblyMass')
+                })
+                Handle.Massless = true
+                Handle.CanCollide = false
+                Handle.Size = SelectedSize
+                EnableConnection({
+                    Handle.Changed,
+                    Handle:GetPropertyChangedSignal('Size'),
+                    Handle:GetPropertyChangedSignal('Mass'),
+                    Handle:GetPropertyChangedSignal('Massless'),
+                    Handle:GetPropertyChangedSignal('AssemblyMass')
+                })
+            end
+        end
+    end
+end
+
+local function HookFuncSecond(Array)
+    for i = 1, #Array do
+        --if not Hooked[tostring(Array[i])] then
+            local hookLocalized
+            hookLocalized = hookfunction(Array[i], newcclosure(function(Object, ...)
+                if not checkcaller() and SpoofedHandle[Object] then
+                    return hookLocalized(SpoofedHandle[Object], ...)
+                end
+                return hookLocalized(Object, ...)
+            end))
+            --Hooked[tostring(Array[i])] = true
+        --end
+    end
+end
+
+local HookedFuncs = {}
+local function InitResizeMain(Handle, Selected)
+    if not IsSpoofed(Handle) then
+        InitFakeHandle(Handle)
+    end
+    if not HookedFuncs[Handle] then
+        HookedFuncs[Handle] = true
+        HookFuncSecond({
+            Handle.Clone,
+            Handle.clone,
+            Handle.GetMass,
+            Handle.getMass,
+            Handle.Resize,
+            Handle.resize
+        })
+    end
+    DisableConnection({
+        Handle.Changed,
+        Handle:GetPropertyChangedSignal('Size'),
+        Handle:GetPropertyChangedSignal('Mass'),
+        Handle:GetPropertyChangedSignal('Massless'),
+        Handle:GetPropertyChangedSignal('AssemblyMass')
+    })
+    if setrawproperty then
+        setrawproperty(Handle, 'CanCollide', false)
+        setrawproperty(Handle, 'Massless', true)
+        if not Selected then
+            setrawproperty(Handle, 'Size', Vector3.new(Configuration.Size.X_Size, Configuration.Size.Y_Size, Configuration.Size.Z_Size))
+        else
+            if Selected then
+                setrawproperty(Handle, 'Size', Selected)
+            end
+        end
+    else
+        Handle.CanCollide = false
+        Handle.Massless = true
+        if not Selected then
+            Handle.Size = Vector3.new(Configuration.Size.X_Size, Configuration.Size.Y_Size, Configuration.Size.Z_Size)
+        else
+            if Selected then
+                Handle.Size = Selected
+            end
+        end
+    end
+    EnableConnection({
+        Handle.Changed,
+        Handle:GetPropertyChangedSignal('Size'),
+        Handle:GetPropertyChangedSignal('Mass'),
+        Handle:GetPropertyChangedSignal('Massless'),
+        Handle:GetPropertyChangedSignal('AssemblyMass')
+    })
+end
+
+local bodyParts = {}
+local function IsABodyPart(Object)
+    for i, v in pairs(bodyParts) do
+        if v == Object then
+            return true
+        end
+    end
+    return false
+end
+
+local function SecureParent(Part, Parented)
+    syn.protect_gui(Parented)
+    Part.Parent = Parented
+    syn.unprotect_gui(Parented)
+end
+
+local function InitProperties(Part)
+    Part.TopSurface = Enum.SurfaceType.SmoothNoOutlines
+    Part.BottomSurface = Enum.SurfaceType.SmoothNoOutlines
+    Part.Transparency = Configuration.Visuals.Visualizer.Part.Transparency
+    Part.Size = Vector3.new(Configuration.Size.X_Size, Configuration.Size.Y_Size, Configuration.Size.Z_Size)
+    Part.Color = Configuration.Visuals.Visualizer.Part.Color
+    Part.CanCollide = false
+    Part.Anchored = false
+    sethiddenproperty(Part, 'Massless', true)
+end
+
+InitSpawn = function(Func)
+    Debug('Function called : InitSpawn')
+    return task.spawn(Func)
+end
+
+InitResizeFake = function(Handle, SelectedSize, SetRawProperty)
+    Debug('Initiated resizing fake handle.')
+    Initiate(Handle, true, SelectedSize, SetRawProperty)
+    Debug('Finished process initiate resize fake handle.')
+end
+
+local ConnectedFake = {}
+local LoopConnected = {}
+local VisualizerConnected = {}
+local Vis = {}
+InitResizeHandle = function(Handle, Caller)
+    Debug('Initiated resizing main handle.')
+    task.wait(0.1)
+    local InsideHandle = GetPartsInsidePart(Handle)
+    if type(InsideHandle) ~= 'table' then
+        return
+    end
+    local Whitelist = {}
+    if isnetworkowner(Client.Character['Right Arm']) then
+        if not table.find(Whitelist, Client.Character['Right Arm']) then
+            table.insert(Whitelist, Client.Character['Right Arm'])
+        end
+    end
+    if not table.find(Whitelist, Handle) then
+        table.insert(Whitelist, Handle)
+    end
+    if not VisualizerConnected[Handle] then
+        VisualizerConnected[Handle] = true
+        Vis[Handle] = {}
+        local Weld = Instance.new('Weld')
+        Weld.Name = 'Humanoid'
+        local Part = Instance.new('Part')
+        Part.Name = 'Humanoid'
+        Part.Transparency = Configuration.Visuals.Visualizer.Part.Transparency
+        Part.Color = Configuration.Visuals.Visualizer.Part.Color
+        table.insert(Vis[Handle], Part)
+        local Selection = Instance.new('SelectionBox')
+        table.insert(Vis[Handle], Selection)
+        Selection.Name = 'Humanoid'
+        Selection.Color3 = Color3.fromRGB(3, 3, 3)
+        Selection.SurfaceColor3 = Configuration.Visuals.Visualizer.SurfaceColor
+        Selection.Color3 = Configuration.Visuals.Visualizer.Color
+        Selection.SurfaceTransparency = Configuration.Visuals.Visualizer.SurfaceTransparency
+        Selection.LineThickness = Configuration.Visuals.Visualizer.LineThickness
+        if protect_instance then
+            protect_instance(Selection)
+        end
+        Selection.Parent = workspace.CurrentCamera
+        Selection.Adornee = Handle
+        InitProperties(Part)
+        SecureParent(Part, workspace.CurrentCamera)
+        SecureParent(Weld, Part)
+        Weld.Part0 = Part
+        Weld.Part1 = Handle
+        local DiedCon
+        DiedCon = Client.Character.Humanoid.Died:Connect(function()
+            Part:Destroy()
+            Selection:Destroy()
+            VisualizerConnected[Handle] = false
+            Vis[Handle] = nil
+            DiedCon:Disconnect()
+        end)
+    end
+    if setrawproperty then
+        if Handle.Parent ~= nil then
+            -- // Main Handle
+            if not Caller then
+                Initiate(Handle, false)
+            else
+                InitResizeMain(Handle)
+            end
+
+             -- // Fake Handle
+            if not LoopConnected[Handle] then
+                LoopConnected[Handle] = true
+                task.spawn(function()
+                    while task.wait(0.1) do
+                        if not Handle or not IsSpoofed(Handle) then
+                            break
+                        end
+                        for i, Fake in pairs(Handle:GetTouchingParts()) do
+                            if Fake:FindFirstChildOfClass('TouchTransmitter') and not IsABodyPart(Fake) and not IsSpoofed(Fake) and not ConnectedFake[Fake] then
+                                local SizeDifference_X, SizeDifference_Y, SizeDifference_Z = SpoofedHandle[Handle].Size.X - Fake.Size.X, SpoofedHandle[Handle].Size.Y - Fake.Size.Y, SpoofedHandle[Handle].Size.Z - Fake.Size.Z
+                                local SelectedSize = Vector3.new(Configuration.Size.X_Size + SizeDifference_X, Configuration.Size.Y_Size + SizeDifference_Y, Configuration.Size.Z_Size + SizeDifference_Z)
+                                InitResizeMain(Fake, SelectedSize)
+                            end
+                        end
+                    end
+                end)
+            else
+                if #LoopConnected >= 3 then
+                    LoopConnected = {}
+                end
+            end
+        end
+    else
+        if Handle.Parent ~= nil then
+            -- // Main Handle
+            if not Caller then
+                Initiate(Handle, false)
+            else
+                InitResizeMain(Handle)
+            end
+
+            -- // Fake Handle
+            if not LoopConnected[Handle] then
+                LoopConnected[Handle] = true
+                task.spawn(function()
+                    while task.wait(0.1) do
+                        if not Handle or not IsSpoofed(Handle) then
+                            break
+                        end
+                        for i, Fake in pairs(Handle:GetTouchingParts()) do
+                            if Fake:FindFirstChildOfClass('TouchTransmitter') and not IsABodyPart(Fake) and not IsSpoofed(Fake) and not ConnectedFake[Fake] then
+                                local SizeDifference_X, SizeDifference_Y, SizeDifference_Z = SpoofedHandle[Handle].Size.X - Fake.Size.X, SpoofedHandle[Handle].Size.Y - Fake.Size.Y, SpoofedHandle[Handle].Size.Z - Fake.Size.Z
+                                local SelectedSize = Vector3.new(Configuration.Size.X_Size + SizeDifference_X, Configuration.Size.Y_Size + SizeDifference_Y, Configuration.Size.Z_Size + SizeDifference_Z)
+                                InitResizeMain(Fake, SelectedSize)
+                            end
+                        end
+                    end
+                end)
+            else
+                if #LoopConnected >= 3 then
+                    LoopConnected = {}
+                end
+            end
+        end
+    end
+    Debug('Finished resizing main handle.')
+end
+
+-- // Begin
+InitiateSpoof()
+
+local ChildRemovedConnection = Client.Character.ChildRemoved:Connect(function(Tool)
+    if Tool:IsA('Tool') then
+        local Part = Tool:FindFirstChildOfClass('Part') or nil
+        if Part then
+            if IsSpoofed(Part) then
+                Debug('Removed spoofed handle.')
+            end
+        end
+    end
+end)
+
+local LungeOnlyCon = false
+local ConnectedSignal = {}
+InitSpawn(function()
+    while true do
+        for i, v in pairs(Server:GetPlayers()) do
+            if v and v ~= Client and v.Character then
+                for i, v in pairs(v.Character:GetChildren()) do
+                    if v:IsA('BasePart') and not table.find(bodyParts, v) then
+                        table.insert(bodyParts, v)
+                    end
+                end
+                if Configuration.Customization.Auto_Disable.Inivisible_Person_Approaches and Client and Client.Character and Client.Character.HumanoidRootPart then
+                    local Distance = (v.Character.HumanoidRootPart.Position - Client.Character.HumanoidRootPart.Position).Magnitude
+                    if Distance <= Configuration.Customization.Auto_Disable.Trigger_Distance then
+                        if setrawproperty then
+                            DisableConnection({
+                                Handle.Changed,
+                                Handle:GetPropertyChangedSignal('Size'),
+                                Handle:GetPropertyChangedSignal('Mass'),
+                                Handle:GetPropertyChangedSignal('Massless'),
+                                Handle:GetPropertyChangedSignal('AssemblyMass')
+                            })
+                            setrawproperty(Handle, 'Massless', true)
+                            setrawproperty(Handle, 'CanCollide', false)
+                            setrawproperty(Handle, 'Size', SpoofedHandle[Handle].Size)
+                            EnableConnection({
+                                Handle.Changed,
+                                Handle:GetPropertyChangedSignal('Size'),
+                                Handle:GetPropertyChangedSignal('Mass'),
+                                Handle:GetPropertyChangedSignal('Massless'),
+                                Handle:GetPropertyChangedSignal('AssemblyMass')
+                            })
+                        else
+                            DisableConnection({
+                                Handle.Changed,
+                                Handle:GetPropertyChangedSignal('Size'),
+                                Handle:GetPropertyChangedSignal('Mass'),
+                                Handle:GetPropertyChangedSignal('Massless'),
+                                Handle:GetPropertyChangedSignal('AssemblyMass')
+                            })
+                            Handle.Massless = true
+                            Handle.CanCollide = false
+                            Handle.Size = SpoofedHandle[Handle].Size
+                            EnableConnection({
+                                Handle.Changed,
+                                Handle:GetPropertyChangedSignal('Size'),
+                                Handle:GetPropertyChangedSignal('Mass'),
+                                Handle:GetPropertyChangedSignal('Massless'),
+                                Handle:GetPropertyChangedSignal('AssemblyMass')
+                            })
+                        end
+                        repeat task.wait() until (v.Character.HumanoidRootPart.Position - Client.Character.HumanoidRootPart.Position).Magnitude > Configuration.Customization.Auto_Disable.Trigger_Distance
+                        if not LungeOnlyCon and setrawproperty then
+                            DisableConnection({
+                                Handle.Changed,
+                                Handle:GetPropertyChangedSignal('Size'),
+                                Handle:GetPropertyChangedSignal('Mass'),
+                                Handle:GetPropertyChangedSignal('Massless'),
+                                Handle:GetPropertyChangedSignal('AssemblyMass')
+                            })
+                            setrawproperty(Handle, 'Massless', true)
+                            setrawproperty(Handle, 'CanCollide', false)
+                            setrawproperty(Handle, 'Size', Vector3.new(Configuration.Size.X_Size, Configuration.Size.Y_Size, Configuration.Size.Z_Size))
+                            EnableConnection({
+                                Handle.Changed,
+                                Handle:GetPropertyChangedSignal('Size'),
+                                Handle:GetPropertyChangedSignal('Mass'),
+                                Handle:GetPropertyChangedSignal('Massless'),
+                                Handle:GetPropertyChangedSignal('AssemblyMass')
+                            })
+                        elseif not LungeOnlyCon then
+                            DisableConnection({
+                                Handle.Changed,
+                                Handle:GetPropertyChangedSignal('Size'),
+                                Handle:GetPropertyChangedSignal('Mass'),
+                                Handle:GetPropertyChangedSignal('Massless'),
+                                Handle:GetPropertyChangedSignal('AssemblyMass')
+                            })
+                            Handle.Massless = true
+                            Handle.CanCollide = false
+                            Handle.Size = Vector3.new(Configuration.Size.X_Size, Configuration.Size.Y_Size, Configuration.Size.Z_Size)
+                            EnableConnection({
+                                Handle.Changed,
+                                Handle:GetPropertyChangedSignal('Size'),
+                                Handle:GetPropertyChangedSignal('Mass'),
+                                Handle:GetPropertyChangedSignal('Massless'),
+                                Handle:GetPropertyChangedSignal('AssemblyMass')
+                            })
+                        end
+                    end
+                end
+            end
+        end
+        local Handle = GetClientHandle()
+        if Handle then
+            if not IsSpoofed(Handle) then
+                Debug('Initiated resize handle.')
+                InitResizeHandle(Handle)
+            end
+            if not ConnectedSignal[Handle] and Configuration.Customization.Enable_On_Lunge then
+                ConnectedSignal[Handle] = Handle.Parent:GetPropertyChangedSignal('Grip'):Connect(function(RECEIVED_ARGUMENTS)
+                    if Handle.Parent.GripUp.Z == 0 then
+                        LungeOnlyCon = false
+                        if setrawproperty then
+                            DisableConnection({
+                                Handle.Changed,
+                                Handle:GetPropertyChangedSignal('Size'),
+                                Handle:GetPropertyChangedSignal('Mass'),
+                                Handle:GetPropertyChangedSignal('Massless'),
+                                Handle:GetPropertyChangedSignal('AssemblyMass')
+                            })
+                            setrawproperty(Handle, 'Massless', true)
+                            setrawproperty(Handle, 'CanCollide', false)
+                            setrawproperty(Handle, 'Size', Vector3.new(Configuration.Size.X_Size, Configuration.Size.Y_Size, Configuration.Size.Z_Size))
+                            EnableConnection({
+                                Handle.Changed,
+                                Handle:GetPropertyChangedSignal('Size'),
+                                Handle:GetPropertyChangedSignal('Mass'),
+                                Handle:GetPropertyChangedSignal('Massless'),
+                                Handle:GetPropertyChangedSignal('AssemblyMass')
+                            })
+                        else
+                            DisableConnection({
+                                Handle.Changed,
+                                Handle:GetPropertyChangedSignal('Size'),
+                                Handle:GetPropertyChangedSignal('Mass'),
+                                Handle:GetPropertyChangedSignal('Massless'),
+                                Handle:GetPropertyChangedSignal('AssemblyMass')
+                            })
+                            Handle.Massless = true
+                            Handle.CanCollide = false
+                            Handle.Size = Vector3.new(Configuration.Size.X_Size, Configuration.Size.Y_Size, Configuration.Size.Z_Size)
+                            EnableConnection({
+                                Handle.Changed,
+                                Handle:GetPropertyChangedSignal('Size'),
+                                Handle:GetPropertyChangedSignal('Mass'),
+                                Handle:GetPropertyChangedSignal('Massless'),
+                                Handle:GetPropertyChangedSignal('AssemblyMass')
+                            })
+                        end
+                    else
+                        LungeOnlyCon = true
+                        if setrawproperty then
+                            DisableConnection({
+                                Handle.Changed,
+                                Handle:GetPropertyChangedSignal('Size'),
+                                Handle:GetPropertyChangedSignal('Mass'),
+                                Handle:GetPropertyChangedSignal('Massless'),
+                                Handle:GetPropertyChangedSignal('AssemblyMass')
+                            })
+                            setrawproperty(Handle, 'Massless', true)
+                            setrawproperty(Handle, 'CanCollide', false)
+                            setrawproperty(Handle, 'Size', SpoofedHandle[Handle].Size)
+                            EnableConnection({
+                                Handle.Changed,
+                                Handle:GetPropertyChangedSignal('Size'),
+                                Handle:GetPropertyChangedSignal('Mass'),
+                                Handle:GetPropertyChangedSignal('Massless'),
+                                Handle:GetPropertyChangedSignal('AssemblyMass')
+                            })
+                        else
+                            DisableConnection({
+                                Handle.Changed,
+                                Handle:GetPropertyChangedSignal('Size'),
+                                Handle:GetPropertyChangedSignal('Mass'),
+                                Handle:GetPropertyChangedSignal('Massless'),
+                                Handle:GetPropertyChangedSignal('AssemblyMass')
+                            })
+                            Handle.Massless = true
+                            Handle.CanCollide = false
+                            Handle.Size = SpoofedHandle[Handle].Size
+                            EnableConnection({
+                                Handle.Changed,
+                                Handle:GetPropertyChangedSignal('Size'),
+                                Handle:GetPropertyChangedSignal('Mass'),
+                                Handle:GetPropertyChangedSignal('Massless'),
+                                Handle:GetPropertyChangedSignal('AssemblyMass')
+                            })
+                        end
+                    end
+                end)
+            end
+        end
+        task.wait()
+    end
+end)
+
+-- // Keybinds
+local function disableOne(Handle)
+    DisableConnection({
+        Handle.Changed,
+        Handle:GetPropertyChangedSignal('Size'),
+        Handle:GetPropertyChangedSignal('Mass'),
+        Handle:GetPropertyChangedSignal('Massless'),
+        Handle:GetPropertyChangedSignal('AssemblyMass')
+    })
+end
+
+local function enableOne(Handle)
+    EnableConnection({
+        Handle.Changed,
+        Handle:GetPropertyChangedSignal('Size'),
+        Handle:GetPropertyChangedSignal('Mass'),
+        Handle:GetPropertyChangedSignal('Massless'),
+        Handle:GetPropertyChangedSignal('AssemblyMass')
+    })
+end
+
+local function updateObject(Handle, Extra, Num)
+    if not Extra then
+        disableOne(Handle)
+        Handle.Massless = true
+        Handle.CanCollide = false
+        Handle.Size = Vector3.new(Configuration.Size.X_Size, Configuration.Size.Y_Size, Configuration.Size.Z_Size)
+        enableOne(Handle)
+    end
+    if Num and Num == 2 then
+        Vis[Handle][1].Transparency = Configuration.Visuals.Visualizer.Part.Transparency
+    else
+        if Num and Num == 1 then
+            Vis[Handle][2].SurfaceTransparency = Configuration.Visuals.Visualizer.SurfaceTransparency
+            Vis[Handle][2].Transparency = Configuration.Visuals.Visualizer.Transparency
+        end
+    end
+end
+
+local oldTransparency = nil
+local boolValue = false
+Mouse.KeyDown:Connect(function(Key)
+    if Key == Configuration.Keybinds.Size_Increase then
+        local Handle = GetClientHandle()
+        if Handle then
+            Configuration.Size.X_Size = Configuration.Size.X_Size + Configuration.Keybinds.Size_Increment
+            Configuration.Size.Y_Size = Configuration.Size.Y_Size + Configuration.Keybinds.Size_Increment
+            Configuration.Size.Z_Size = Configuration.Size.Z_Size + Configuration.Keybinds.Size_Increment
+            updateObject(Handle)
+        end
+    elseif Key == Configuration.Keybinds.Size_Descrease then
+        local Handle = GetClientHandle()
+        if Handle then
+            Configuration.Size.X_Size = Configuration.Size.X_Size - Configuration.Keybinds.Size_Increment
+            Configuration.Size.Y_Size = Configuration.Size.Y_Size - Configuration.Keybinds.Size_Increment
+            Configuration.Size.Z_Size = Configuration.Size.Z_Size - Configuration.Keybinds.Size_Increment
+            updateObject(Handle)
+        end
+    elseif Key == Configuration.Keybinds.Visibility_Switch then
+        local Handle = GetClientHandle()
+        if Handle then
+            if type(Vis[Handle]) == 'table' and #Vis[Handle] >= 1 then
+                if Vis[Handle][2].SurfaceTransparency < 1 then -- // Visible
+                    printconsole('Set 1')
+                    Vis[Handle][2].SurfaceTransparency = 1
+                    Vis[Handle][2].Transparency = 1
+                else
+                    printconsole('Set 1 1')
+                    updateObject(Handle, true, 1)
+                end
+                if Vis[Handle][1].Transparency < 1 then -- // Visible
+                    printconsole('Set 2')
+                    Vis[Handle][1].Transparency = 1
+                else
+                    printconsole("Set 2 2")
+                    updateObject(Handle, true, 2)
+                end
+            end
+        end
+    end
+end)
+
+local ScreenGui = Instance.new("ScreenGui")
+syn.protect_gui(ScreenGui)
+ScreenGui.ResetOnSpawn = false
+local TextLabel = Instance.new("TextLabel")
+local UIGradient = Instance.new("UIGradient")
+local Frame = Instance.new("Frame")
+local TextLabel_2 = Instance.new("TextLabel")
+local TextLabel_3 = Instance.new("TextLabel")
+local PLRNAME = Instance.new("TextLabel")
+local TextLabel_4 = Instance.new("TextLabel")
+local FPS = Instance.new("TextLabel")
+ScreenGui.Parent = game.Players.LocalPlayer:WaitForChild("PlayerGui")
+ScreenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+TextLabel.Parent = ScreenGui
+TextLabel.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+TextLabel.BackgroundTransparency = 1.000
+TextLabel.Position = UDim2.new(0.882315516, 0, 0.937901497, 0)
+TextLabel.Size = UDim2.new(0, 200, 0, 50)
+TextLabel.Font = Enum.Font.Ubuntu
+TextLabel.Text = "detour"
+TextLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+TextLabel.TextSize = 50.000
+UIGradient.Color = ColorSequence.new{ColorSequenceKeypoint.new(0.00, Color3.fromRGB(255, 0, 0)), ColorSequenceKeypoint.new(1.00, Color3.fromRGB(0, 85, 255))}
+UIGradient.Parent = TextLabel
+Frame.Parent = ScreenGui
+Frame.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+Frame.Position = UDim2.new(0.00763358735, 0, 0.957173526, 0)
+Frame.Size = UDim2.new(0, 306, 0, 31)
+TextLabel_2.Parent = Frame
+TextLabel_2.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+TextLabel_2.BackgroundTransparency = 1.000
+TextLabel_2.Position = UDim2.new(-0.0882352889, 0, 0.14712815, 0)
+TextLabel_2.Size = UDim2.new(0, 146, 0, 21)
+TextLabel_2.Font = Enum.Font.SourceSansBold
+TextLabel_2.Text = "DETOUR"
+TextLabel_2.TextColor3 = Color3.fromRGB(255, 255, 255)
+TextLabel_2.TextSize = 20.000
+TextLabel_3.Parent = Frame
+TextLabel_3.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+TextLabel_3.BackgroundTransparency = 1.000
+TextLabel_3.Position = UDim2.new(0.26797387, 0, -0.161290318, 0)
+TextLabel_3.Size = UDim2.new(0, 27, 0, 41)
+TextLabel_3.Font = Enum.Font.SourceSans
+TextLabel_3.Text = "|"
+TextLabel_3.TextColor3 = Color3.fromRGB(67, 67, 67)
+TextLabel_3.TextSize = 20.000
+PLRNAME.Name = "PLRNAME"
+PLRNAME.Parent = Frame
+PLRNAME.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+PLRNAME.BackgroundTransparency = 1.000
+PLRNAME.Position = UDim2.new(0.356209159, 0, -0.161290318, 0)
+PLRNAME.Size = UDim2.new(0, 94, 0, 41)
+PLRNAME.Font = Enum.Font.SourceSans
+PLRNAME.TextColor3 = Color3.fromRGB(255, 255, 255)
+PLRNAME.TextSize = 19.000
+TextLabel_4.Parent = Frame
+TextLabel_4.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+TextLabel_4.BackgroundTransparency = 1.000
+TextLabel_4.Position = UDim2.new(0.663398743, 0, -0.161290318, 0)
+TextLabel_4.Size = UDim2.new(0, 27, 0, 41)
+TextLabel_4.Font = Enum.Font.SourceSans
+TextLabel_4.Text = "|"
+TextLabel_4.TextColor3 = Color3.fromRGB(67, 67, 67)
+TextLabel_4.TextSize = 20.000
+FPS.Name = "FPS"
+FPS.Parent = Frame
+FPS.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+FPS.BackgroundTransparency = 1.000
+FPS.Position = UDim2.new(0.712418318, 0, -0.161290318, 0)
+FPS.Size = UDim2.new(0, 76, 0, 41)
+FPS.Font = Enum.Font.SourceSans
+FPS.Text = "N/A fps"
+FPS.TextColor3 = Color3.fromRGB(255, 255, 255)
+FPS.TextSize = 19.000
+FPS.TextWrapped = true
+if not Configuration.Visuals.Appearance.Ping_FPS_Box then
+    for i, v in pairs({TextLabel_2, FPS, TextLabel_4, PLRNAME, Frame}) do
+        v.Position = UDim2.new(999, 999, 999, 999)
+    end
+end
+if not Configuration.Visuals.Appearance.Detour_Watermark then
+    TextLabel:Destroy()
+end
+local function MOEVTTL_fake_script() -- TextLabel.LocalScript 
+    if not TextLabel then
+        return
+    end
+	local script = Instance.new('LocalScript', TextLabel)
+	local Grad = script.Parent.UIGradient
+	local Deb = false
+	local Time = tick()
+	game.GetService(game, 'RunService').RenderStepped:Connect(function(delta)
+	    if tick() - Time >= 1 then
+	        Time = tick()
+	        FPS.Text = tostring(math.round(1 / delta)) .. ' fps'
+	        PLRNAME.Text = tostring(string.split(string.split(game:GetService("Stats").Network.ServerStatsItem["Data Ping"]:GetValueString(), ' ')[1], '.')[1]) .. ' ms'
+	    end
+		if Deb then
+			return
+		end
+		if Grad.Offset.X < -0.6 then
+			Deb = true
+			repeat
+				Grad.Offset += Vector2.new(0.04, 0)
+				task.wait(0.06)
+			until
+			    Grad.Offset.X >= 0.6
+			task.wait(0.3)
+			Deb = false
+		else
+			Grad.Offset = Vector2.new(Grad.Offset.X - 0.3 * delta, 0)
+		end
+	end)
+end
+coroutine.wrap(MOEVTTL_fake_script)()
+local function ORSEL_fake_script() -- Frame.LocalScript
+    if not Frame then
+        return
+    end
+	local script = Instance.new('LocalScript', Frame)
+	local UIS = game:GetService("UserInputService")
+	local function dragify(Frame)
+		local startPos = Frame.Position or nil
+		local dragToggle = nil
+		local dragSpeed = 0.50
+		local dragInput = nil
+		local dragStart = nil
+		local dragPos = nil
+		local function updateInput(input)
+			local Delta = input.Position - dragStart
+			local Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + Delta.X, startPos.Y.Scale, startPos.Y.Offset + Delta.Y)
+			game:GetService("TweenService"):Create(Frame, TweenInfo.new(0.30), {Position = Position}):Play()
+		end
+		Frame.InputBegan:Connect(function(input)
+			if (input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch) and UIS:GetFocusedTextBox() == nil then
+				dragToggle = true
+				dragStart = input.Position
+				startPos = Frame.Position
+				input.Changed:Connect(function()
+					if input.UserInputState == Enum.UserInputState.End then
+						dragToggle = false
+					end
+				end)
+			end
+		end)
+		Frame.InputChanged:Connect(function(input)
+			if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
+				dragInput = input
+			end
+		end)
+		game:GetService("UserInputService").InputChanged:Connect(function(input)
+			if input == dragInput and dragToggle then
+				updateInput(input)
+			end
+		end)
+	end
+	shared.DRAGIFY = function(Frame)
+		return dragify(Frame)
+	end
+	dragify(script.Parent)
+end
+coroutine.wrap(ORSEL_fake_script)()
