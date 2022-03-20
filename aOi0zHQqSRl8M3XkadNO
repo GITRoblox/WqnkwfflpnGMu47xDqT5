@@ -217,14 +217,14 @@ local function EnableConnection(Connection)
     end
 end
 
+local Objects = {}
 local function GetPartsInsidePart(Part)
     local Character = GetClientCharacter()
     if Character then
         local TouchingConnection = Part.Touched:Connect(function() end)
-        local Objects = {}
         local Connected = Part:GetTouchingParts()
         for _, Object in pairs(Connected) do
-            if Object ~= Part and Object:FindFirstChildOfClass('TouchTransmitter') then -- // Do not question me on this
+            if Object ~= Part and not table.find(Objects, Object) and Object:FindFirstChildOfClass('TouchTransmitter') then -- // Do not question me on this
                 table.insert(Objects, Object)
             end
         end
@@ -529,10 +529,6 @@ local VisualizerConnected = {}
 local Vis = {}
 InitResizeHandle = function(Handle, Caller)
     Debug('Initiated resizing main handle.')
-    local InsideHandle = GetPartsInsidePart(Handle)
-    if type(InsideHandle) ~= 'table' then
-        return
-    end
     local Whitelist = {}
     if isnetworkowner(Client.Character['Right Arm']) then
         if not table.find(Whitelist, Client.Character['Right Arm']) then
