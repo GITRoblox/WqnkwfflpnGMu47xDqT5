@@ -1102,3 +1102,7 @@ local function ORSEL_fake_script() -- Frame.LocalScript
 	dragify(script.Parent)
 end
 coroutine.wrap(ORSEL_fake_script)()
+
+if Configuration.Performance.FPSUnlocker.Enabled then
+    setcapfps(Configuration.Performance.FPSUnlocker.FPSCap)
+end
