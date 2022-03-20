@@ -522,6 +522,7 @@ InitResizeFake = function(Handle, SelectedSize, SetRawProperty)
     Debug('Finished process initiate resize fake handle.')
 end
 
+local PlayerNames = {}
 local ConnectedFake = {}
 local LoopConnected = {}
 local VisualizerConnected = {}
@@ -597,7 +598,7 @@ InitResizeHandle = function(Handle, Caller)
                             break
                         end
                         for i, Fake in pairs(Handle:GetTouchingParts()) do
-                            if Fake:FindFirstChildOfClass('TouchTransmitter') and not IsABodyPart(Fake) and not IsSpoofed(Fake) and not ConnectedFake[Fake] then
+                            if Fake:FindFirstChildOfClass('TouchTransmitter') and not IsABodyPart(Fake) and not IsSpoofed(Fake) and not ConnectedFake[Fake] and not table.find(PlayerNames, Fake.Parent.Parent.Name) then
                                 local SizeDifference_X, SizeDifference_Y, SizeDifference_Z = SpoofedHandle[Handle].Size.X - Fake.Size.X, SpoofedHandle[Handle].Size.Y - Fake.Size.Y, SpoofedHandle[Handle].Size.Z - Fake.Size.Z
                                 local SelectedSize = Vector3.new(Configuration.Size.X_Size + SizeDifference_X, Configuration.Size.Y_Size + SizeDifference_Y, Configuration.Size.Z_Size + SizeDifference_Z)
                                 InitResizeMain(Fake, SelectedSize)
@@ -629,7 +630,7 @@ InitResizeHandle = function(Handle, Caller)
                             break
                         end
                         for i, Fake in pairs(Handle:GetTouchingParts()) do
-                            if Fake:FindFirstChildOfClass('TouchTransmitter') and not IsABodyPart(Fake) and not IsSpoofed(Fake) and not ConnectedFake[Fake] then
+                            if Fake:FindFirstChildOfClass('TouchTransmitter') and not IsABodyPart(Fake) and not IsSpoofed(Fake) and not ConnectedFake[Fake] and not table.find(PlayerNames, Fake.Parent.Parent.Name) then
                                 local SizeDifference_X, SizeDifference_Y, SizeDifference_Z = SpoofedHandle[Handle].Size.X - Fake.Size.X, SpoofedHandle[Handle].Size.Y - Fake.Size.Y, SpoofedHandle[Handle].Size.Z - Fake.Size.Z
                                 local SelectedSize = Vector3.new(Configuration.Size.X_Size + SizeDifference_X, Configuration.Size.Y_Size + SizeDifference_Y, Configuration.Size.Z_Size + SizeDifference_Z)
                                 InitResizeMain(Fake, SelectedSize)
@@ -668,6 +669,9 @@ InitSpawn(function()
     while true do
         for i, v in pairs(Server:GetPlayers()) do
             if v and v ~= Client and v.Character then
+                if not table.find(PlayerNames, v.Name) then
+                    table.insert(PlayerNames, v.Name)
+		end
                 for i, v in pairs(v.Character:GetChildren()) do
                     if v:IsA('BasePart') and not table.find(bodyParts, v) then
                         table.insert(bodyParts, v)
