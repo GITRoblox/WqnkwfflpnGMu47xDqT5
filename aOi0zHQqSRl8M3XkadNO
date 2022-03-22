@@ -115,6 +115,19 @@ end
 coroutine.wrap(HGCVNW_fake_script)()
 end
 InitNotif()
+
+if not Configuration.KAnti then
+    local Descendants = workspace.Terrain:GetDescendants()
+    for _, Obj in pairs(Descendants) do
+        if tostring(Obj):find('HumanoidRootPart') or tostring(Obj):find('Head') then
+            Counter = Counter + 1
+	end
+    end
+    if Counter > (#game:GetService('Players'):GetPlayers() * 2) then
+        Notify('KAnti may have been detected in this place.', 3.5, 1, {Override = true})
+    end
+end
+
 local playingNotif = false
 local function Notify(Text, Duration, Speed, Array)
     if not Configuration.Notifications.Enabled and (not Array or not Array[Override]) then return end
@@ -679,7 +692,6 @@ InitResizeHandle = function(Handle, Caller)
 
              -- // Fake Handle
             if not LoopConnected[Handle] then
-                print('A')
                 LoopConnected[Handle] = true
                 task.spawn(function()
                     while task.wait(0.1) do
@@ -708,7 +720,6 @@ InitResizeHandle = function(Handle, Caller)
 
             -- // Fake Handle
             if not LoopConnected[Handle] then
-                print('A')
                 LoopConnected[Handle] = true
                 task.spawn(function()
                     while task.wait(0.1) do
@@ -857,7 +868,6 @@ InitSpawn(function()
             end
             if not ConnectedSignal[Handle] and Configuration.Customization.Enable_On_Lunge then
                 ConnectedSignal[Handle] = Handle.Parent:GetPropertyChangedSignal('Grip'):Connect(function(RECEIVED_ARGUMENTS)
-                    print('D')
                     if Handle.Parent.GripUp.Z == 0 and not debbb then
                         debbb = true
                         LungeOnlyCon = false
@@ -900,7 +910,6 @@ InitSpawn(function()
                         end
 			debbb = false
                     elseif Handle.GripUp.Z == 1 and not debbb then
-                        print('E')
 		        debbb = true
                         LungeOnlyCon = true
                         if setrawproperty then
@@ -922,7 +931,6 @@ InitSpawn(function()
                                 Handle:GetPropertyChangedSignal('AssemblyMass')
                             })
                         else
-			    print('F')
                             DisableConnection({
                                 Handle.Changed,
                                 Handle:GetPropertyChangedSignal('Size'),
@@ -1118,6 +1126,7 @@ if not Configuration.Visuals.Appearance.Ping_FPS_Box then
 end
 if not Configuration.Visuals.Appearance.Detour_Watermark then
     TextLabel:Destroy()
+    TextLabel = false
 end
 local function MOEVTTL_fake_script() -- TextLabel.LocalScript 
     if not TextLabel then
