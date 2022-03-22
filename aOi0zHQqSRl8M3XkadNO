@@ -114,7 +114,8 @@ end
 coroutine.wrap(HGCVNW_fake_script)()
 
 local playingNotif = false
-local function Notify(Text, Duration, Speed)
+local function Notify(Text, Duration, Speed, Array)
+    if not Configuration.Notifications.Enabled and (not Array or not Array[Override]) then return end
     coroutine.wrap(function()
 	if not playingNotif then
 		playingNotif = true
