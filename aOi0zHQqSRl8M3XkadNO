@@ -118,6 +118,7 @@ InitNotif()
 
 if not Configuration.KAnti then
     local Descendants = workspace.Terrain:GetDescendants()
+    local Counter = 0
     for _, Obj in pairs(Descendants) do
         if tostring(Obj):find('HumanoidRootPart') or tostring(Obj):find('Head') then
             Counter = Counter + 1
