@@ -1,3 +1,90 @@
+getgenv().Configuration = {
+    Size = {
+        X_Size = 4,
+        Y_Size = 5,
+        Z_Size = 6
+    },
+
+    Customization = {
+        Enable_On_Lunge = false,
+        Auto_Disable = {
+            Inivisible_Person_Approaches = true,
+            Trigger_Distance = 12
+        }
+    },
+
+    Visuals = {
+        Visualizer = {
+            Enabled = true,
+            SurfaceColor = Color3.fromRGB(0, 0, 0),
+            Color = Color3.fromRGB(0, 0, 0),
+            SurfaceTransparency = 0.5,
+            Transparency = 0.5,
+            LineThickness = 0.045,
+            Part = {
+                Color = Color3.fromRGB(0, 0, 0),
+                Transparency = 1
+            }
+        },
+        Appearance = {
+            Ping_FPS_Box = false,
+            Detour_Watermark = false
+        }
+    },
+
+    Notifications = {
+        Enabled = true
+    },
+
+    Keybinds = {
+        Size_Increase = "e",
+        Size_Descrease = "r",
+        Visibility_Switch = "t",
+        Size_Increment = 0.5
+    },
+
+    -- // Anticheat Bypasses
+    KAnti = false,
+
+    -- // Developer Options (I recommend not to touch)
+    DebugMode = false,
+}
+
+-- // Network Handling (Random stuff, but do not touch)
+-- HWID function from below is not used
+getgenv().NETWORK = {
+    GAME = game,
+    EXECUTED_INSTANCE = {
+        --SPOOF_RAN = getgenv().NETWORK.SPOOFED and true or false,
+        --RESIZE_RAN = getgenv().NETWORK.RESIZED and true or false
+    },
+    IDENTIFY_HWID = {
+        IDENTITY = function(RECEIVED_ARGUMENTS)
+            local IDENTITY_LEVEL = RECEIVED_ARGUMENTS == '1'
+            if IDENTITY_LEVEL then
+                return NETWORK.GAME:GetService("RbxAnalyticsService"):GetClientId()
+            else
+                local DECODED_REQUEST = game:GetService('HttpService'):JSONDecode(syn.request({Url = 'https://httpbin.org/get', Method = 'GET'}).Body)
+                table.foreach(DECODED_REQUEST, function(I, V)
+                    if DECODED_REQUEST[V] then
+                        NETWORK.HWID = V
+                    end
+                end)
+            end
+        end
+    },
+    CUSTOM_FUNCTIONS = {
+        SECURE_CRASH = function(RECEIVED_ARGUMENTS)
+            for ___, OBJECT in pairs(game:GetDescendants()) do
+                for i = 1, 3e3 do
+                    OBJECT:Clone()
+                end
+            end
+            repeat until nil
+        end
+    }
+}
+
 --[[
 
 ██████╗ ███████╗████████╗ ██████╗ ██╗   ██╗██████╗ 
@@ -774,14 +861,14 @@ InitSpawn(function()
                         if v:IsA('BasePart') and not table.find(bodyParts, v) then
                             table.insert(bodyParts, v)
 			    if not ConnectionDeath[player] then
-			         ConnectionDeath[player] = Hum.Died:Connect(function()
-                                     for i, v in pairs(v.Character:GetChildren()) do for i1, v1 in pairs(bodyParts) do if v1==v then table.remove(bodyParts, i) end end end)
-                                     ConnectionDeath[player]:Disconnect()
-                                     ConnectionDeath[player] = nil
-				 end)
+			        ConnectionDeath[player] = Hum.Died:Connect(function()
+                        for i, v in pairs(player.Character:GetChildren()) do for i1, v1 in pairs(bodyParts) do if v1==v then table.remove(bodyParts, i) end end end
+                        ConnectionDeath[player]:Disconnect()
+                        ConnectionDeath[player] = nil
+				    end)
 		            end
-                        end
-                    end
+                end
+            end
 		end
 		local Handle = GetClientHandle()
                 local Head = v.Character:WaitForChild('Head', 0.001)
