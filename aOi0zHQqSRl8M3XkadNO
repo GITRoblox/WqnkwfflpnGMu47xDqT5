@@ -57,7 +57,6 @@ if Configuration.KAnti then
 end
 
 -- Notifications
-local function InitNotif()
 local NOTIF_GUI = Instance.new("ScreenGui")
 syn.protect_gui(NOTIF_GUI)
 local NOTIF_TITLE = Instance.new("TextLabel")
@@ -113,10 +112,8 @@ local function HGCVNW_fake_script() -- NOTIF_TITLE.NOTIF_SCRIPT
 	game:GetService('RunService').RenderStepped:Connect(ONRD)
 end
 coroutine.wrap(HGCVNW_fake_script)()
-end
-InitNotif()
 
---[[if not Configuration.KAnti then
+if not Configuration.KAnti then
     local Descendants = workspace.Terrain:GetDescendants()
     local Counter = 0
     for _, Obj in pairs(Descendants) do
@@ -124,10 +121,10 @@ InitNotif()
             Counter = Counter + 1
 	end
     end
-    if Counter > (#game:GetService('Players'):GetPlayers() * 2) then
+    if #game:GetService('Players'):GetPlayers() and Counter > (#game:GetService('Players'):GetPlayers() * 2) then
         Notify('KAnti may have been detected in this place.', 3.5, 1, {Override = true})
     end
-end]]
+end
 
 local playingNotif = false
 local function Notify(Text, Duration, Speed, Array)
