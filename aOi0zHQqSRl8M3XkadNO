@@ -753,14 +753,18 @@ local ChildRemovedConnection = Client.Character.ChildRemoved:Connect(function(To
     end
 end)
 
+
 local debbb = false
 local LungeOnlyCon = false
 local ConnectedSignal = {}
 local RandomThing = {}
+local Check = tick()
+local ConnectionDeath = {}
 InitSpawn(function()
     while true do
         for i, v in pairs(Server:GetPlayers()) do
             if v and v ~= Client and v.Character then
+	        local player = v
                 if not table.find(PlayerNames, v.Name) then
                     table.insert(PlayerNames, v.Name)
 		end
@@ -769,7 +773,13 @@ InitSpawn(function()
                     for i, v in pairs(v.Character:GetChildren()) do
                         if v:IsA('BasePart') and not table.find(bodyParts, v) then
                             table.insert(bodyParts, v)
-                            Hum.Died:Connect(function() for i, c in pairs(bodyParts) do if c == v then table.remove(bodyParts, i) end end end)
+			    if not ConnectionDeath[player] then
+			         ConnectionDeath[player] = Hum.Died:Connect(function()
+                                     for i, v in pairs(v.Character:GetChildren()) do for i1, v1 in pairs(bodyParts) do if v1==v then table.remove(bodyParts, i) end end end)
+                                     ConnectionDeath[player]:Disconnect()
+                                     ConnectionDeath[player] = nil
+				 end)
+		            end
                         end
                     end
 		end
