@@ -51,10 +51,6 @@ local RequiredMethod = {'Clone', 'getMass', 'GetMass', 'clone'}
 local SpecialMethod = {'resize', 'Resize'}
 
 -- // Libraries
--- Handle Bypasses
-if Configuration.KAnti then
-    Configuration.Size.X_Size = 0.1
-end
 
 -- Notifications
 local NOTIF_GUI = Instance.new("ScreenGui")
@@ -124,7 +120,14 @@ if not Configuration.KAnti then
     end
     if #game:GetService('Players'):GetPlayers() and Counter > (#game:GetService('Players'):GetPlayers() * 2) then
         Notify('KAnti may have been detected in this place.', 3.5, 1, {Override = true})
+        if Configuration.Force_Enable_KAnti then
+            Configuration.KAnti = true
+        end
     end
+end
+
+if Configuration.KAnti then
+    Configuration.Size.X_Size = 0.1
 end
 
 local playingNotif = false
