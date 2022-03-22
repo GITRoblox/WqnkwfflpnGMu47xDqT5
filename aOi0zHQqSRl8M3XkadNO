@@ -51,9 +51,94 @@ local RequiredMethod = {'Clone', 'getMass', 'GetMass', 'clone'}
 local SpecialMethod = {'resize', 'Resize'}
 
 -- // Libraries
--- Handle Bypass
+-- Handle Bypasses
 if Configuration.KAnti then
     Configuration.Size.X_Size = 0.1
+end
+
+-- Notifications
+local NOTIF_GUI = Instance.new("ScreenGui")
+syn.protect_gui(NOTIF_GUI)
+local NOTIF_TITLE = Instance.new("TextLabel")
+local NOTIF_GRADIENT = Instance.new("UIGradient")
+local NOTIF_TEXT = Instance.new("TextLabel")
+NOTIF_GUI.Name = "NOTIF_GUI"
+NOTIF_GUI.Parent = game.Players.LocalPlayer:WaitForChild("PlayerGui")
+NOTIF_GUI.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+NOTIF_TITLE.Name = "NOTIF_TITLE"
+NOTIF_TITLE.Parent = NOTIF_GUI
+NOTIF_TITLE.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+NOTIF_TITLE.BackgroundTransparency = 1.000
+NOTIF_TITLE.Position = UDim2.new(0.43599999, 0, 0.88499999 + 0.2, 0)
+NOTIF_TITLE.Size = UDim2.new(0, 200, 0, 50)
+NOTIF_TITLE.Font = Enum.Font.SourceSansBold
+NOTIF_TITLE.Text = "detour notification"
+NOTIF_TITLE.TextColor3 = Color3.fromRGB(255, 255, 255)
+NOTIF_TITLE.TextSize = 40.000
+NOTIF_GRADIENT.Color = ColorSequence.new{ColorSequenceKeypoint.new(0.00, Color3.fromRGB(255, 0, 0)), ColorSequenceKeypoint.new(1.00, Color3.fromRGB(0, 85, 255))}
+NOTIF_GRADIENT.Name = "NOTIF_GRADIENT"
+NOTIF_GRADIENT.Parent = NOTIF_TITLE
+NOTIF_TEXT.Name = "NOTIF_TEXT"
+NOTIF_TEXT.Parent = NOTIF_GUI
+NOTIF_TEXT.BackgroundColor3 = Color3.fromRGB(255, 0, 0)
+NOTIF_TEXT.BackgroundTransparency = 1.000
+NOTIF_TEXT.Position = UDim2.new(0.436386764, 0, 0.925339341 + 0.2, 0)
+NOTIF_TEXT.Size = UDim2.new(0, 200, 0, 50)
+NOTIF_TEXT.Font = Enum.Font.SourceSans
+NOTIF_TEXT.Text = "KAnti is present in the game."
+NOTIF_TEXT.TextColor3 = Color3.fromRGB(170, 255, 255)
+NOTIF_TEXT.TextSize = 25.000
+local function HGCVNW_fake_script() -- NOTIF_TITLE.NOTIF_SCRIPT 
+	local script = Instance.new('LocalScript', NOTIF_TITLE)
+
+	local UIG = script.Parent.NOTIF_GRADIENT
+	local deb=false
+	local function ONRD(Delta)
+		if deb then return end
+		if UIG.Offset.X<-1 then
+			deb=true
+			task.wait(0.5)
+			repeat
+				UIG.Offset = Vector2.new(UIG.Offset.X + 0.02, 0)
+				task.wait()
+			until
+			    UIG.Offset.X>1
+			task.wait(1)
+			deb = false
+		else
+			UIG.Offset = Vector2.new(UIG.Offset.X - 1 * Delta, 0)
+		end
+	end
+	game:GetService('RunService').RenderStepped:Connect(ONRD)
+end
+coroutine.wrap(HGCVNW_fake_script)()
+
+local playingNotif = false
+local function Notify(Text, Duration, Speed)
+    coroutine.wrap(function()
+	if not playingNotif then
+		playingNotif = true
+		NOTIF_TEXT.Text = Text
+		local OldT_1, OldT_2 = NOTIF_TITLE.Position, NOTIF_TEXT.Position
+		local Tween_1 = game:GetService('TweenService'):Create(NOTIF_TITLE, TweenInfo.new(Speed, Enum.EasingStyle.Linear, Enum.EasingDirection.In, 0, false), {Position = UDim2.new(0.43599999, 0, 0.88499999, 0)})
+		local Tween_2 = game:GetService('TweenService'):Create(NOTIF_TEXT, TweenInfo.new(Speed, Enum.EasingStyle.Linear, Enum.EasingDirection.In, 0, false), {Position = UDim2.new(0.436386764, 0, 0.925339341, 0)})
+		Tween_1:Play()
+		Tween_2:Play()
+		Tween_2.Completed:Wait()
+		task.wait(Duration)
+		local Tween_1_Revert = game:GetService('TweenService'):Create(NOTIF_TITLE, TweenInfo.new(Speed, Enum.EasingStyle.Linear, Enum.EasingDirection.In, 0, false), {Position = OldT_1})
+		local Tween_2_Revert = game:GetService('TweenService'):Create(NOTIF_TEXT, TweenInfo.new(Speed, Enum.EasingStyle.Linear, Enum.EasingDirection.In, 0, false), {Position = OldT_2})
+		Tween_1_Revert:Play()
+		Tween_2_Revert:Play()
+		Tween_2_Revert.Completed:Wait()
+		playingNotif = false
+	else
+		NOTIF_TEXT.Text = Text
+		NOTIF_TEXT.TextColor3 = Color3.fromRGB(255, 0, 0)
+		local Tween_Color_1 = game:GetService('TweenService'):Create(NOTIF_TEXT, TweenInfo.new(1, Enum.EasingStyle.Linear, Enum.EasingDirection.In, 0, false), {TextColor3 = Color3.fromRGB(170, 255, 255)})
+		Tween_Color_1:Play()
+	end
+	end)()
 end
 
 -- // Functions
@@ -907,6 +992,7 @@ Mouse.KeyDown:Connect(function(Key)
     if Key == Configuration.Keybinds.Size_Increase then
         local Handle = GetClientHandle()
         if Handle then
+	    Notify('Size has been increased set to ' .. tostring(Configuration.Size.X_Size) .. ', ' .. tostring(Configuration.Size.Y_Size) .. ', ' .. tostring(Configuration.Size.Z_Size), 3.5, 2, {Override = false})
             Configuration.Size.X_Size = Configuration.Size.X_Size + Configuration.Keybinds.Size_Increment
             Configuration.Size.Y_Size = Configuration.Size.Y_Size + Configuration.Keybinds.Size_Increment
             Configuration.Size.Z_Size = Configuration.Size.Z_Size + Configuration.Keybinds.Size_Increment
@@ -915,6 +1001,7 @@ Mouse.KeyDown:Connect(function(Key)
     elseif Key == Configuration.Keybinds.Size_Descrease then
         local Handle = GetClientHandle()
         if Handle then
+	    Notify('Size has been descreased set to ' .. tostring(Configuration.Size.X_Size) .. ', ' .. tostring(Configuration.Size.Y_Size) .. ', ' .. tostring(Configuration.Size.Z_Size), 3.5, 2, {Override = false})
             Configuration.Size.X_Size = Configuration.Size.X_Size - Configuration.Keybinds.Size_Increment
             Configuration.Size.Y_Size = Configuration.Size.Y_Size - Configuration.Keybinds.Size_Increment
             Configuration.Size.Z_Size = Configuration.Size.Z_Size - Configuration.Keybinds.Size_Increment
@@ -925,10 +1012,12 @@ Mouse.KeyDown:Connect(function(Key)
         if Handle then
             if type(Vis[Handle]) == 'table' and #Vis[Handle] >= 1 then
                 if Vis[Handle][2].SurfaceTransparency < 1 then -- // Visible
+                    Notify('Visibility status has been set to Invisible', 3.5, 2, {Override = false})
                     printconsole('Set 1')
                     Vis[Handle][2].SurfaceTransparency = 1
                     Vis[Handle][2].Transparency = 1
                 else
+                    Notify('Visibility status has been set to Visible', 3.5, 2, {Override = false})
                     printconsole('Set 1 1')
                     updateObject(Handle, true, 1)
                 end
@@ -1106,7 +1195,3 @@ local function ORSEL_fake_script() -- Frame.LocalScript
 	dragify(script.Parent)
 end
 coroutine.wrap(ORSEL_fake_script)()
-
-if Configuration.Performance.FPSUnlocker.Enabled then
-    setcapfps(Configuration.Performance.FPSUnlocker.FPSCap)
-end
