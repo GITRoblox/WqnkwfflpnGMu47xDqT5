@@ -57,6 +57,7 @@ if Configuration.KAnti then
 end
 
 -- Notifications
+local function InitNotif()
 local NOTIF_GUI = Instance.new("ScreenGui")
 syn.protect_gui(NOTIF_GUI)
 local NOTIF_TITLE = Instance.new("TextLabel")
@@ -112,7 +113,8 @@ local function HGCVNW_fake_script() -- NOTIF_TITLE.NOTIF_SCRIPT
 	game:GetService('RunService').RenderStepped:Connect(ONRD)
 end
 coroutine.wrap(HGCVNW_fake_script)()
-
+end
+InitNotif()
 local playingNotif = false
 local function Notify(Text, Duration, Speed, Array)
     if not Configuration.Notifications.Enabled and (not Array or not Array[Override]) then return end
