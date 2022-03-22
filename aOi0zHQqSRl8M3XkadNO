@@ -116,7 +116,7 @@ coroutine.wrap(HGCVNW_fake_script)()
 end
 InitNotif()
 
-if not Configuration.KAnti then
+--[[if not Configuration.KAnti then
     local Descendants = workspace.Terrain:GetDescendants()
     local Counter = 0
     for _, Obj in pairs(Descendants) do
@@ -127,7 +127,7 @@ if not Configuration.KAnti then
     if Counter > (#game:GetService('Players'):GetPlayers() * 2) then
         Notify('KAnti may have been detected in this place.', 3.5, 1, {Override = true})
     end
-end
+end]]
 
 local playingNotif = false
 local function Notify(Text, Duration, Speed, Array)
