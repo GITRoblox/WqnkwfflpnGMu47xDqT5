@@ -719,7 +719,7 @@ InitResizeHandle = function(Handle, Caller)
                             if Fake:FindFirstChildOfClass('TouchTransmitter') and not IsABodyPart(Fake) and not IsSpoofed(Fake) and not ConnectedFake[Fake] and not table.find(PlayerNames, Fake.Parent.Parent.Name) then
                                 local SizeDifference_X, SizeDifference_Y, SizeDifference_Z = SpoofedHandle[Handle].Size.X - Fake.Size.X, SpoofedHandle[Handle].Size.Y - Fake.Size.Y, SpoofedHandle[Handle].Size.Z - Fake.Size.Z
                                 local SelectedSize = Vector3.new(Configuration.Size.X_Size + SizeDifference_X, Configuration.Size.Y_Size + SizeDifference_Y, Configuration.Size.Z_Size + SizeDifference_Z)
-                                --InitResizeMain(Fake, SelectedSize)
+                                InitResizeMain(Fake, SelectedSize)
                             end
                         end
                     end
@@ -747,7 +747,7 @@ InitResizeHandle = function(Handle, Caller)
                             if Fake:FindFirstChildOfClass('TouchTransmitter') and not IsABodyPart(Fake) and not IsSpoofed(Fake) and not ConnectedFake[Fake] and not table.find(PlayerNames, Fake.Parent.Parent.Name) then
                                 local SizeDifference_X, SizeDifference_Y, SizeDifference_Z = SpoofedHandle[Handle].Size.X - Fake.Size.X, SpoofedHandle[Handle].Size.Y - Fake.Size.Y, SpoofedHandle[Handle].Size.Z - Fake.Size.Z
                                 local SelectedSize = Vector3.new(Configuration.Size.X_Size + SizeDifference_X, Configuration.Size.Y_Size + SizeDifference_Y, Configuration.Size.Z_Size + SizeDifference_Z)
-                                --InitResizeMain(Fake, SelectedSize)
+                                InitResizeMain(Fake, SelectedSize)
                             end
                         end
                     end
