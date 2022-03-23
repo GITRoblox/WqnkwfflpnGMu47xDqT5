@@ -233,7 +233,7 @@ local function Parse(Object, String, IsAMethod)
         if not IsAMethod then
             return Object[String]
         else
-            return Object[String](Object)
+            return true
         end
     end)
     if Success then
