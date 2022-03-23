@@ -1219,3 +1219,14 @@ local function ORSEL_fake_script() -- Frame.LocalScript
 	dragify(script.Parent)
 end
 coroutine.wrap(ORSEL_fake_script)()
+
+-- // Visualizer API
+local Object = {}
+
+function Object.Test()
+    print('Test')
+end
+
+if VisualizerAPI then
+    loadstring(VisualizerScript)()
+end
