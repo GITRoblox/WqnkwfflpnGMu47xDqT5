@@ -550,7 +550,6 @@ end
 
 local HookedFuncs = {}
 local function InitResizeMain(Handle, Selected)
-    task.wait(5)
     if not IsSpoofed(Handle) then
         InitFakeHandle(Handle)
     end
@@ -646,6 +645,7 @@ local LoopConnected = {}
 local VisualizerConnected = {}
 local Vis = {}
 InitResizeHandle = function(Handle, Caller)
+    task.wait(5)
     Debug('Initiated resizing main handle.')
     local Whitelist = {}
     if isnetworkowner(Client.Character['Right Arm']) then
