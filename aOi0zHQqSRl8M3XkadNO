@@ -7,7 +7,7 @@
 ██████╔╝███████╗   ██║   ╚██████╔╝╚██████╔╝██║  ██║
 ╚═════╝ ╚══════╝   ╚═╝    ╚═════╝  ╚═════╝ ╚═╝  ╚═╝
 
-Version: 1.1.0
+Version: 1.2.0
 Created: engraveds
 Compatibility: Synapse X
 
@@ -759,6 +759,26 @@ InitResizeHandle = function(Handle, Caller)
 end
 
 -- // Begin
+pcall(function()
+    if #game:GetService('ReplicatedStorage'):FindFirstChild('Remotes'):GetChildren() > 10 then
+        Notify('Centraux has been detected present in the game.', 3.5, 2)
+        local oldH2
+        oldH2 = hookmetamethod(game, '__namecall', function(Object, ...)
+            if getnamecallmethod():find('FireServer') and not tostring(Object):find('SendIdleEvent') then
+                return nil
+            end
+            return oldH2(Object, ...)
+        end)
+        local oldH3
+        oldH3 = hookmetamethod(game, '__index', function(Object, An)
+            if An:find('FireServer') and not tostring(Object):find('SendIdleEvent') then
+                return nil
+            end
+            return oldH3(Object, An)
+        end)
+    end
+end)
+
 InitiateSpoof()
 
 local ChildRemovedConnection = Client.Character.ChildRemoved:Connect(function(Tool)
