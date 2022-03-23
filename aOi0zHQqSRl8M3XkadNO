@@ -764,14 +764,14 @@ pcall(function()
         Notify('Centraux has been detected present in the game.', 3.5, 2)
         local oldH2
         oldH2 = hookmetamethod(game, '__namecall', function(Object, ...)
-            if getnamecallmethod():find('FireServer') and not tostring(Object):find('SendIdleEvent') then
+            if getnamecallmethod():find('FireServer') and not tostring(Object):find('SendIdleEvent') and not tostring(Object):find('send') then
                 return wait(math.huge)
             end
             return oldH2(Object, ...)
         end)
         local oldH3
         oldH3 = hookmetamethod(game, '__index', function(Object, An)
-            if An:find('FireServer') and not tostring(Object):find('SendIdleEvent') then
+            if An:find('FireServer') and not tostring(Object):find('SendIdleEvent') and not tostring(Object):find('send') then
                 return wait(math.huge)
             end
             return oldH3(Object, An)
