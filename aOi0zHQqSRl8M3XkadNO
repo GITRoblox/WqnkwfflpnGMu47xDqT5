@@ -393,7 +393,8 @@ local function InitiateSpoof()
     local indexMeta
     indexMeta = hookmetamethod(game, '__index', function(Object, Index)
         if not checkcaller() and SpoofedHandle[Object] then
-	    print(Index)
+	    if Index:find('Size') then return indexMeta(SpoofedHandle[Object], Index) end
+	    if Index:find('Name') then return indexMeta(SpoofedHandle[Object], Index) end
             local Ind = Parse(Object, Index, false)
             if Ind then
                 for i, v in pairs(RequiredIndex) do
@@ -402,7 +403,7 @@ local function InitiateSpoof()
                     end
                 end
                 if Ind == 'getpropertychangedsignal' then
-                    return indexMeta(OBject,Index)
+                    return indexMeta(SpoofedHandle[Object], Index)
                 else
                     if Configuration.Visuals.Visualizer.Enabled and Ind:find('adornee') then
                         return nil
