@@ -849,7 +849,7 @@ InitSpawn(function()
                                 Handle:GetPropertyChangedSignal('AssemblyMass')
                             })
                         end
-                        repeat task.wait() until (v.Character.HumanoidRootPart.Position - Client.Character.HumanoidRootPart.Position).Magnitude > Configuration.Customization.Auto_Disable.Trigger_Distance
+                        repeat task.wait() until (not v.Character and not v.Character.HumanoidRootPart) or (v.Character.HumanoidRootPart.Position - Client.Character.HumanoidRootPart.Position).Magnitude > Configuration.Customization.Auto_Disable.Trigger_Distance
                         if not LungeOnlyCon and setrawproperty and Handle and SpoofedHandle[Handle] then
                             DisableConnection({
                                 Handle.Changed,
