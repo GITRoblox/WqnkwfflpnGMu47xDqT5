@@ -812,7 +812,7 @@ InitSpawn(function()
                 if Handle and v.Character and Head and v.Character.Head.Transparency >= 1 and Configuration.Customization.Auto_Disable.Inivisible_Person_Approaches and Client and Client.Character and Client.Character.HumanoidRootPart then
                     local Distance = (v.Character.HumanoidRootPart.Position - Client.Character.HumanoidRootPart.Position).Magnitude
                     if Distance <= Configuration.Customization.Auto_Disable.Trigger_Distance then
-                        if setrawproperty and Handle then
+                        if setrawproperty and Handle and SpoofedHandle[Handle] then
                             DisableConnection({
                                 Handle.Changed,
                                 Handle:GetPropertyChangedSignal('Size'),
@@ -830,7 +830,7 @@ InitSpawn(function()
                                 Handle:GetPropertyChangedSignal('Massless'),
                                 Handle:GetPropertyChangedSignal('AssemblyMass')
                             })
-                        elseif Handle then
+                        elseif Handle and SpoofedHandle[Handle] then
                             DisableConnection({
                                 Handle.Changed,
                                 Handle:GetPropertyChangedSignal('Size'),
@@ -850,7 +850,7 @@ InitSpawn(function()
                             })
                         end
                         repeat task.wait() until (v.Character.HumanoidRootPart.Position - Client.Character.HumanoidRootPart.Position).Magnitude > Configuration.Customization.Auto_Disable.Trigger_Distance
-                        if not LungeOnlyCon and setrawproperty and Handle then
+                        if not LungeOnlyCon and setrawproperty and Handle and SpoofedHandle[Handle] then
                             DisableConnection({
                                 Handle.Changed,
                                 Handle:GetPropertyChangedSignal('Size'),
@@ -868,7 +868,7 @@ InitSpawn(function()
                                 Handle:GetPropertyChangedSignal('Massless'),
                                 Handle:GetPropertyChangedSignal('AssemblyMass')
                             })
-                        elseif not LungeOnlyCon and Handle then
+                        elseif not LungeOnlyCon and Handle and SpoofedHandle[Handle] then
                             DisableConnection({
                                 Handle.Changed,
                                 Handle:GetPropertyChangedSignal('Size'),
