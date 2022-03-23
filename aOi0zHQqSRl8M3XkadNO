@@ -393,12 +393,11 @@ local function InitiateSpoof()
     local indexMeta
     indexMeta = hookmetamethod(game, '__index', function(Object, Index)
         if not checkcaller() and SpoofedHandle[Object] then
-	    if Index:find('Size') then return indexMeta(SpoofedHandle[Object], Index) end
-	    if Index:find('Name') then return indexMeta(SpoofedHandle[Object], Index) end
             local Ind = Parse(Object, Index, false)
             if Ind then
                 for i, v in pairs(RequiredIndex) do
                     if Ind:find(v) then
+		        print('SPOOFED ' .. v)
                         return indexMeta(SpoofedHandle[Object], Index)
                     end
                 end
@@ -418,10 +417,10 @@ local function InitiateSpoof()
         local Params = {...}
         if not checkcaller() and SpoofedHandle[Object] then
             local Method = Parse(Object, getnamecallmethod(), true)
-            print(getnamecallmethod())
             if Method then
                 for i, v in pairs(RequiredMethod) do
                     if Method:find(v) then
+		        print('HOOKED ' .. v)
                         return namecallMeta(SpoofedHandle[Object], ...)
                     end
                 end
