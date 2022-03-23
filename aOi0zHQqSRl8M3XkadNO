@@ -1235,5 +1235,5 @@ function Object.Test()
 end
 
 if VisualizerAPI then
-    loadstring(APIFUNC..VisualizerScript)()
+    --loadstring(APIFUNC..VisualizerScript)()
 end
