@@ -125,7 +125,7 @@ if not Configuration.KAnti then
             Counter = Counter + 1
 	end
     end
-    if #game:GetService('Players'):GetPlayers() and Counter > (#game:GetService('Players'):GetPlayers() * 2) then
+    if #game:GetService('Players'):GetPlayers() and Counter > #game:GetService('Players'):GetPlayers() then
         Notify('KAnti may have been detected in this place.', 3.5, 1, {Override = true})
         if Configuration.Force_Enable_KAnti then
             Configuration.KAnti = true
