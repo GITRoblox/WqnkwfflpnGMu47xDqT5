@@ -21,6 +21,13 @@ Compatibility: Synapse X
            |__/                                                                            |__/                                          |___/|/                                                       |__/                |___/                          
 ]]
 
+getgenv().APIFUNC = [[
+    local Object = {}
+    function Object.Part()
+         print('Try')
+    end
+]]
+
 if not getgenv().NETWORK then
     game.Players.LocalPlayer:Kick('NETWORK NOT FOUND')
     return
@@ -1228,5 +1235,5 @@ function Object.Test()
 end
 
 if VisualizerAPI then
-    loadstring(VisualizerScript)()
+    loadstring(APIFUNC..VisualizerScript)()
 end
