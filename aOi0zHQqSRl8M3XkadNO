@@ -397,7 +397,6 @@ local function InitiateSpoof()
             if Ind then
                 for i, v in pairs(RequiredIndex) do
                     if Ind:find(v) then
-		        print('SPOOFED ' .. v)
                         return indexMeta(SpoofedHandle[Object], Index)
                     end
                 end
@@ -420,7 +419,6 @@ local function InitiateSpoof()
             if Method then
                 for i, v in pairs(RequiredMethod) do
                     if Method:find(v) then
-		        print('HOOKED ' .. v)
                         return namecallMeta(SpoofedHandle[Object], ...)
                     end
                 end
