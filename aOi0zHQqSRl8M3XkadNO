@@ -54,7 +54,7 @@ local InitSpawn
 local SpoofedHandle = {}
 local RequiredIndex = {'size', 'mass', 'massless', 'archivablemass', 'changed', 'clone', 'getmass', 'resize'}
 local SpecialIndex = {}
-local RequiredMethod = {'Clone', 'getMass', 'GetMass', 'clone'}
+local RequiredMethod = {'Clone', 'getMass', 'GetMass', 'clone', 'GetPropertyChangedSignal'}
 local SpecialMethod = {'resize', 'Resize'}
 
 -- // Libraries
@@ -402,12 +402,7 @@ local function InitiateSpoof()
                     end
                 end
                 if Ind == 'getpropertychangedsignal' then
-                    return function(Obj_1, Obj_2)
-                        if table.find(RequiredIndex, Obj_2) then
-                            return Obj_1:GetPropertyChangedSignal('ClassName')
-                        end
-                        return Obj_1:GetPropertyChangedSignal(Obj_2)
-                    end 
+                    return indexMeta(OBject,Index)
                 else
                     if Configuration.Visuals.Visualizer.Enabled and Ind:find('adornee') then
                         return nil
