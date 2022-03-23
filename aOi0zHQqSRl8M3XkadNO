@@ -660,17 +660,28 @@ InitResizeHandle = function(Handle, Caller)
         Weld.Name = 'Humanoid'
         local Part = Instance.new('Part')
         Part.Name = 'Humanoid'
+	if Configuration.Visuals.Visualizer.Part.Shape then
+	    Part.Shape = Enum.PartType[Configuration.Visuals.Visualizer.Part.Shape]
+	end
         Part.Transparency = Configuration.Visuals.Visualizer.Part.Transparency
         Part.Color = Configuration.Visuals.Visualizer.Part.Color
         table.insert(Vis[Handle], Part)
-        local Selection = Instance.new('SelectionBox')
+	local Selection
+	if Configuration.Visuals.Visualizer.SelectionSphere.Enabled then
+	    Selection = Instance.new('SelectionSphere')
+	    Selection.Name = 'Humanoid'
+            Selection.SurfaceColor3 = Configuration.Visuals.Visualizer.SelectionSphere.SurfaceColor3
+	    Selection.SurfaceTransparency = Configuration.Visuals.Visualizer.SelectionSphere.SurfaceTransparency
+	else
+	    Selection = Instance.new('SelectionBox')
+	    Selection.Name = 'Humanoid'
+            Selection.Color3 = Color3.fromRGB(3, 3, 3)
+            Selection.SurfaceColor3 = Configuration.Visuals.Visualizer.SurfaceColor
+            Selection.Color3 = Configuration.Visuals.Visualizer.Color
+            Selection.SurfaceTransparency = Configuration.Visuals.Visualizer.SurfaceTransparency
+            Selection.LineThickness = Configuration.Visuals.Visualizer.LineThickness
+	end
         table.insert(Vis[Handle], Selection)
-        Selection.Name = 'Humanoid'
-        Selection.Color3 = Color3.fromRGB(3, 3, 3)
-        Selection.SurfaceColor3 = Configuration.Visuals.Visualizer.SurfaceColor
-        Selection.Color3 = Configuration.Visuals.Visualizer.Color
-        Selection.SurfaceTransparency = Configuration.Visuals.Visualizer.SurfaceTransparency
-        Selection.LineThickness = Configuration.Visuals.Visualizer.LineThickness
         if protect_instance then
             protect_instance(Selection)
         end
