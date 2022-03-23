@@ -672,6 +672,8 @@ InitResizeHandle = function(Handle, Caller)
 	    Selection.Name = 'Humanoid'
             Selection.SurfaceColor3 = Configuration.Visuals.Visualizer.SelectionSphere.SurfaceColor3
 	    Selection.SurfaceTransparency = Configuration.Visuals.Visualizer.SelectionSphere.SurfaceTransparency
+	    Selection.Transparency = Configuration.Visuals.Visualizer.SelectionSphere.Transparency
+	    Selection.Color3 = Configuration.Visuals.Visualizer.SelectionSphere.Color3
 	else
 	    Selection = Instance.new('SelectionBox')
 	    Selection.Name = 'Humanoid'
