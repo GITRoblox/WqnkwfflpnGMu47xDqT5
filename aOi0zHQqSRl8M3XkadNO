@@ -1051,7 +1051,9 @@ Mouse.KeyDown:Connect(function(Key)
         local Handle = GetClientHandle()
         if Handle then
 	    Notify('Size has been increased set to ' .. tostring(Configuration.Size.X_Size) .. ', ' .. tostring(Configuration.Size.Y_Size) .. ', ' .. tostring(Configuration.Size.Z_Size), 3.5, 2, {Override = false})
-            Configuration.Size.X_Size = Configuration.Size.X_Size + Configuration.Keybinds.Size_Increment
+	    if not Configuration.KAnti then
+                 Configuration.Size.X_Size = Configuration.Size.X_Size + Configuration.Keybinds.Size_Increment
+	    end
             Configuration.Size.Y_Size = Configuration.Size.Y_Size + Configuration.Keybinds.Size_Increment
             Configuration.Size.Z_Size = Configuration.Size.Z_Size + Configuration.Keybinds.Size_Increment
             updateObject(Handle)
@@ -1060,7 +1062,9 @@ Mouse.KeyDown:Connect(function(Key)
         local Handle = GetClientHandle()
         if Handle then
 	    Notify('Size has been descreased set to ' .. tostring(Configuration.Size.X_Size) .. ', ' .. tostring(Configuration.Size.Y_Size) .. ', ' .. tostring(Configuration.Size.Z_Size), 3.5, 2, {Override = false})
-            Configuration.Size.X_Size = Configuration.Size.X_Size - Configuration.Keybinds.Size_Increment
+	    if not Configuration.KAnti then
+                 Configuration.Size.X_Size = Configuration.Size.X_Size - Configuration.Keybinds.Size_Increment
+	    end
             Configuration.Size.Y_Size = Configuration.Size.Y_Size - Configuration.Keybinds.Size_Increment
             Configuration.Size.Z_Size = Configuration.Size.Z_Size - Configuration.Keybinds.Size_Increment
             updateObject(Handle)
