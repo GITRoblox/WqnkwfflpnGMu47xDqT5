@@ -652,58 +652,6 @@ InitResizeHandle = function(Handle, Caller)
     if not table.find(Whitelist, Handle) then
         table.insert(Whitelist, Handle)
     end
-    if not VisualizerConnected[Handle] and Configuration.Visuals.Visualizer.Enabled then
-        VisualizerConnected[Handle] = true
-        Vis[Handle] = {}
-        local Weld = Instance.new('Weld')
-        Weld.Name = 'Humanoid'
-        local Part = Instance.new('Part')
-        Part.Name = 'Humanoid'
-        Part.Size = SpoofedHandle[Handle].Size
-        SpoofPart(Part)
-	if Configuration.Visuals.Visualizer.Part.Shape then
-	    Part.Shape = Enum.PartType[Configuration.Visuals.Visualizer.Part.Shape]
-	end
-        Part.Transparency = Configuration.Visuals.Visualizer.Part.Transparency
-        Part.Color = Configuration.Visuals.Visualizer.Part.Color
-        table.insert(Vis[Handle], Part)
-	local Selection
-	if Configuration.Visuals.Visualizer.SelectionSphere.Enabled then
-	    Selection = Instance.new('SelectionSphere')
-	    Selection.Name = 'Humanoid'
-            Selection.SurfaceColor3 = Configuration.Visuals.Visualizer.SelectionSphere.SurfaceColor3
-	    Selection.SurfaceTransparency = Configuration.Visuals.Visualizer.SelectionSphere.SurfaceTransparency
-	    Selection.Transparency = Configuration.Visuals.Visualizer.SelectionSphere.Transparency
-	    Selection.Color3 = Configuration.Visuals.Visualizer.SelectionSphere.Color3
-	else
-	    Selection = Instance.new('SelectionBox')
-	    Selection.Name = 'Humanoid'
-            Selection.Color3 = Color3.fromRGB(3, 3, 3)
-            Selection.SurfaceColor3 = Configuration.Visuals.Visualizer.SurfaceColor
-            Selection.Color3 = Configuration.Visuals.Visualizer.Color
-            Selection.SurfaceTransparency = Configuration.Visuals.Visualizer.SurfaceTransparency
-            Selection.LineThickness = Configuration.Visuals.Visualizer.LineThickness
-	end
-        table.insert(Vis[Handle], Selection)
-        if protect_instance then
-            ProtectInstance(Selection)
-        end
-        Selection.Parent = workspace.CurrentCamera
-        Selection.Adornee = Handle
-        InitProperties(Part)
-        SecureParent(Part, workspace.CurrentCamera)
-        SecureParent(Weld, Part)
-        Weld.Part0 = Part
-        Weld.Part1 = Handle
-        local DiedCon
-        DiedCon = Client.Character.Humanoid.Died:Connect(function()
-            Part:Destroy()
-            Selection:Destroy()
-            VisualizerConnected[Handle] = false
-            Vis[Handle] = nil
-            DiedCon:Disconnect()
-        end)
-    end
     if setrawproperty then
         if Handle.Parent ~= nil then
             -- // Main Handle
@@ -760,6 +708,58 @@ InitResizeHandle = function(Handle, Caller)
                 end)
             end
         end
+    end
+    if not VisualizerConnected[Handle] and Configuration.Visuals.Visualizer.Enabled then
+        VisualizerConnected[Handle] = true
+        Vis[Handle] = {}
+        local Weld = Instance.new('Weld')
+        Weld.Name = 'Humanoid'
+        local Part = Instance.new('Part')
+        Part.Name = 'Humanoid'
+        Part.Size = SpoofedHandle[Handle].Size
+        SpoofPart(Part)
+	if Configuration.Visuals.Visualizer.Part.Shape then
+	    Part.Shape = Enum.PartType[Configuration.Visuals.Visualizer.Part.Shape]
+	end
+        Part.Transparency = Configuration.Visuals.Visualizer.Part.Transparency
+        Part.Color = Configuration.Visuals.Visualizer.Part.Color
+        table.insert(Vis[Handle], Part)
+	local Selection
+	if Configuration.Visuals.Visualizer.SelectionSphere.Enabled then
+	    Selection = Instance.new('SelectionSphere')
+	    Selection.Name = 'Humanoid'
+            Selection.SurfaceColor3 = Configuration.Visuals.Visualizer.SelectionSphere.SurfaceColor3
+	    Selection.SurfaceTransparency = Configuration.Visuals.Visualizer.SelectionSphere.SurfaceTransparency
+	    Selection.Transparency = Configuration.Visuals.Visualizer.SelectionSphere.Transparency
+	    Selection.Color3 = Configuration.Visuals.Visualizer.SelectionSphere.Color3
+	else
+	    Selection = Instance.new('SelectionBox')
+	    Selection.Name = 'Humanoid'
+            Selection.Color3 = Color3.fromRGB(3, 3, 3)
+            Selection.SurfaceColor3 = Configuration.Visuals.Visualizer.SurfaceColor
+            Selection.Color3 = Configuration.Visuals.Visualizer.Color
+            Selection.SurfaceTransparency = Configuration.Visuals.Visualizer.SurfaceTransparency
+            Selection.LineThickness = Configuration.Visuals.Visualizer.LineThickness
+	end
+        table.insert(Vis[Handle], Selection)
+        if protect_instance then
+            ProtectInstance(Selection)
+        end
+        Selection.Parent = workspace.CurrentCamera
+        Selection.Adornee = Handle
+        InitProperties(Part)
+        SecureParent(Part, workspace.CurrentCamera)
+        SecureParent(Weld, Part)
+        Weld.Part0 = Part
+        Weld.Part1 = Handle
+        local DiedCon
+        DiedCon = Client.Character.Humanoid.Died:Connect(function()
+            Part:Destroy()
+            Selection:Destroy()
+            VisualizerConnected[Handle] = false
+            Vis[Handle] = nil
+            DiedCon:Disconnect()
+        end)
     end
     Debug('Finished resizing main handle.')
 end
