@@ -541,6 +541,10 @@ local function HookFuncSecond(Array)
     end
 end
 
+local function SpoofPart(Part)
+    SpoofedHandle[Part] = Part:Clone()
+end
+
 local HookedFuncs = {}
 local function InitResizeMain(Handle, Selected)
     if not IsSpoofed(Handle) then
@@ -655,6 +659,8 @@ InitResizeHandle = function(Handle, Caller)
         Weld.Name = 'Humanoid'
         local Part = Instance.new('Part')
         Part.Name = 'Humanoid'
+        Part.Size = SpoofedHandle[Handle].Size
+        SpoofPart(Part)
 	if Configuration.Visuals.Visualizer.Part.Shape then
 	    Part.Shape = Enum.PartType[Configuration.Visuals.Visualizer.Part.Shape]
 	end
