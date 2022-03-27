@@ -730,8 +730,9 @@ InitResizeHandle = function(Handle, Caller)
             Selection.LineThickness = Configuration.Visuals.Visualizer.LineThickness
 	end
         table.insert(Vis[Handle], Selection)
-        if syn then
+        if syn and protect_instance then
             syn.protect_gui(Selection)
+	    protect_instance(Selection)
         end
         Selection.Parent = workspace.CurrentCamera
         Selection.Adornee = Handle
