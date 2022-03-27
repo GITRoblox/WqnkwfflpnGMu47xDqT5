@@ -712,18 +712,6 @@ InitResizeHandle = function(Handle, Caller)
     if not VisualizerConnected[Handle] and Configuration.Visuals.Visualizer.Enabled then
         VisualizerConnected[Handle] = true
         Vis[Handle] = {}
-        local Weld = Instance.new('Weld')
-        Weld.Name = 'Humanoid'
-        local Part = Instance.new('Part')
-        Part.Name = 'Humanoid'
-        Part.Size = SpoofedHandle[Handle].Size
-        SpoofPart(Part)
-	if Configuration.Visuals.Visualizer.Part.Shape then
-	    Part.Shape = Enum.PartType[Configuration.Visuals.Visualizer.Part.Shape]
-	end
-        Part.Transparency = Configuration.Visuals.Visualizer.Part.Transparency
-        Part.Color = Configuration.Visuals.Visualizer.Part.Color
-        table.insert(Vis[Handle], Part)
 	local Selection
 	if Configuration.Visuals.Visualizer.SelectionSphere.Enabled then
 	    Selection = Instance.new('SelectionSphere')
@@ -747,14 +735,8 @@ InitResizeHandle = function(Handle, Caller)
         end
         Selection.Parent = workspace.CurrentCamera
         Selection.Adornee = Handle
-        InitProperties(Part)
-        SecureParent(Part, workspace.CurrentCamera)
-        SecureParent(Weld, Part)
-        Weld.Part0 = Part
-        Weld.Part1 = Handle
         local DiedCon
         DiedCon = Client.Character.Humanoid.Died:Connect(function()
-            Part:Destroy()
             Selection:Destroy()
             VisualizerConnected[Handle] = false
             Vis[Handle] = nil
@@ -1041,7 +1023,7 @@ local function updateObject(Handle, Extra, Num)
         enableOne(Handle)
     end
     if Num and Num == 2 then
-        Vis[Handle][1].Transparency = Configuration.Visuals.Visualizer.Part.Transparency
+        --Vis[Handle][1].Transparency = Configuration.Visuals.Visualizer.Part.Transparency
     else
         if Num and Num == 1 then
             Vis[Handle][2].SurfaceTransparency = Configuration.Visuals.Visualizer.SurfaceTransparency
@@ -1081,20 +1063,11 @@ Mouse.KeyDown:Connect(function(Key)
             if type(Vis[Handle]) == 'table' and #Vis[Handle] >= 1 then
                 if Vis[Handle][2].SurfaceTransparency < 1 then -- // Visible
                     Notify('Visibility status has been set to Invisible', 3.5, 2, {Override = false})
-                    printconsole('Set 1')
                     Vis[Handle][2].SurfaceTransparency = 1
                     Vis[Handle][2].Transparency = 1
                 else
                     Notify('Visibility status has been set to Visible', 3.5, 2, {Override = false})
-                    printconsole('Set 1 1')
                     updateObject(Handle, true, 1)
-                end
-                if Vis[Handle][1].Transparency < 1 then -- // Visible
-                    printconsole('Set 2')
-                    Vis[Handle][1].Transparency = 1
-                else
-                    printconsole("Set 2 2")
-                    updateObject(Handle, true, 2)
                 end
             end
         end
