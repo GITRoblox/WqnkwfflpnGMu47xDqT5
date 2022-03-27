@@ -686,7 +686,7 @@ InitResizeHandle = function(Handle, Caller)
 	end
         table.insert(Vis[Handle], Selection)
         if protect_instance then
-            protect_instance(Selection)
+            ProtectInstance(Selection)
         end
         Selection.Parent = workspace.CurrentCamera
         Selection.Adornee = Handle
