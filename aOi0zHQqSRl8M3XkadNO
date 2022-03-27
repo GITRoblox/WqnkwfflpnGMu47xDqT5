@@ -759,7 +759,7 @@ InitResizeHandle = function(Handle, Caller)
 end
 
 -- // Begin
-pcall(function()
+--[[pcall(function()
     if #game:GetService('ReplicatedStorage'):FindFirstChild('Remotes'):GetChildren() > 10 then
         Notify('Centraux has been detected present in the game.', 3.5, 2)
         local oldH2
@@ -777,7 +777,7 @@ pcall(function()
             return oldH3(Object, An)
         end)
     end
-end)
+end)]]
 
 InitiateSpoof()
 
