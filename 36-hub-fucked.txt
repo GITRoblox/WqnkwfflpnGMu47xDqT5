@@ -1,0 +1,11 @@
+-- // returns a fake whitelist (coz owner is retarded)
+-- // next time dont obfuscate ur shit with base64
+-- // cracked by Enrise#8534
+
+{
+    {
+        "Cracked-By-Enrise": {
+            "name":"EnriseTheGod",
+            "discord":"696966969966969"
+    },
+{
