@@ -1,6 +1,0 @@
-return {
-    ["Cracked-By-Enrise"] = {
-        ["name"] = "EnriseTheGod",
-        ["discord"] = "6969696969696"
-    }
-}
