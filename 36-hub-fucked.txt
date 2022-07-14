@@ -3,9 +3,8 @@
 -- // cracked by Enrise#8534
 
 {
-    {
-        "Cracked-By-Enrise": {
-            "name":"EnriseTheGod",
-            "discord":"696966969966969"
+    "Cracked-By-Enrise": {
+        "name":"EnriseTheGod",
+        "discord":"696966969966969"
     }
 }
