@@ -1,0 +1,24 @@
+-- // cracked by enrise in 6 minutes (world record)
+
+local s, e = pcall(function()
+    return readfile("enrise.txt")
+end)
+if not s then
+    writefile("enrise.txt", "ewogICAgIkNyYWNrZWQtQnktRW5yaXNlIjogewogICAgICAgICJuYW1lIjoiRW5yaXNlVGhlR29kIiwKICAgICAgICAiZGlzY29yZCI6IjY5Njk2Njk2OTk2Njk2OSIKICAgIH0KfQ==")
+end
+
+local lol
+lol = hookfunction(game.HttpGet, function(...)
+    local p = {...}
+    if checkcaller() and p[2]:find("whitelist.txt") then -- // making a new fake whitelist to prevent him from unpatching dat shit lol
+        return readfile("enrise.txt")
+    end
+    return lol(...)
+end)
+
+local old
+old = hookfunction(game:GetService("RbxAnalyticsService").GetClientId, function(...) -- // bro deadass uses getclientid for whitelist
+    return "Cracked-By-Enrise" -- // havent seen a shittier whitelist than this one
+end)
+
+loadstring(game:HttpGet('https://raw.githubusercontent.com/GITRoblox/WqnkwfflpnGMu47xDqT5/main/36-hub-backup.txt'))()
