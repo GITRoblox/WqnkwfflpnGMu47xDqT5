@@ -8,4 +8,4 @@
             "name":"EnriseTheGod",
             "discord":"696966969966969"
     },
-{
+}
